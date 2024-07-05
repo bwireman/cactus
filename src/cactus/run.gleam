@@ -6,25 +6,26 @@ import gleam/string
 import shellout
 import tom.{type Toml}
 
-type ActionKind {
+pub type ActionKind {
   Module
   SubCommand
   Binary
 }
 
-type Action {
+pub type Action {
   Action(command: String, kind: ActionKind, args: List(String))
 }
 
-fn parse(raw: Toml) {
+pub fn parse_action(raw: Toml) {
   case raw {
     tom.InlineTable(t) -> {
       use command <- try(tom.get_string(t, ["command"]) |> result.nil_error)
-      use kind <- try(
+      let kind =
         tom.get_string(t, ["kind"])
         |> result.map(string.lowercase)
-        |> result.nil_error,
-      )
+        |> result.nil_error
+        |> result.unwrap("module")
+
       let args =
         tom.get_array(t, ["args"])
         |> result.unwrap([])
@@ -44,17 +45,18 @@ fn parse(raw: Toml) {
   |> result.nil_error
 }
 
-pub fn run(path: String, action: String) {
-  use manifest <- try(util.parse_manifest(path))
+pub fn get_actions(path: String, action: String) {
+  use manifest <- try(util.parse_gleam_toml(path))
   use action_body <- try(
     tom.get_table(manifest, ["cactus", action]) |> result.nil_error,
   )
-  use actions <- result.try(
-    tom.get_array(action_body, ["actions"]) |> result.nil_error,
-  )
+  tom.get_array(action_body, ["actions"]) |> result.nil_error
+}
 
+pub fn run(path: String, action: String) {
+  use actions <- try(get_actions(path, action))
   actions
-  |> list.map(parse)
+  |> list.map(parse_action)
   |> list.map(fn(parse_result) {
     result.try(parse_result, fn(action) {
       let #(bin, args) = case action.kind {
@@ -66,6 +68,7 @@ pub fn run(path: String, action: String) {
         Binary -> #(action.command, action.args)
       }
 
+      io.println("Running: " <> bin <> " " <> string.join(args, " "))
       case shellout.command(run: bin, with: args, in: ".", opt: []) {
         Ok(res) -> {
           io.print(res)

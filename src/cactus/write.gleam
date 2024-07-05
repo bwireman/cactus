@@ -44,7 +44,7 @@ fn create_script(command: String) {
 }
 
 pub fn init(path: String) {
-  use manifest <- try(util.parse_manifest(path))
+  use manifest <- try(util.parse_gleam_toml(path))
   use action_body <- result.map(
     tom.get_table(manifest, ["cactus"]) |> result.nil_error,
   )
