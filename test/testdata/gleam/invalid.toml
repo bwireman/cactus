@@ -1,0 +1,8 @@
+[cactus.no-actions]
+[cactus.actions-wrong-type]
+actions = true
+
+[cactus.no-command]
+actions = [{}]
+
+

@@ -1,4 +1,4 @@
-import cactus/errors.{MissingFieldErr, as_err, as_fs_err}
+import cactus/errors.{type CactusErr, as_fs_err, as_invalid_field_err}
 import cactus/util
 import filepath
 import gleam/dict
@@ -21,7 +21,10 @@ pub const valid_hooks = [
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update",
 ]
 
-pub fn create_script(hooks_dir: String, command: String) {
+pub fn create_script(
+  hooks_dir: String,
+  command: String,
+) -> Result(String, CactusErr) {
   io.println("Initializing hook: '" <> command <> "'")
   let path = filepath.join(hooks_dir, command)
 
@@ -40,13 +43,12 @@ pub fn create_script(hooks_dir: String, command: String) {
   |> as_fs_err(path)
 }
 
-pub fn init(hooks_dir: String, path: String) {
+pub fn init(hooks_dir: String, path: String) -> Result(List(String), CactusErr) {
   {
     use manifest <- try(util.parse_gleam_toml(path))
-    use action_body <- result.map(as_err(
-      tom.get_table(manifest, ["cactus"]),
-      MissingFieldErr("cactus"),
-    ))
+    use action_body <- result.map(
+      as_invalid_field_err(tom.get_table(manifest, ["cactus"])),
+    )
 
     action_body
     |> dict.keys()

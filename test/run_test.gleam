@@ -1,4 +1,5 @@
 import cactus/run
+import gleam/io
 import gleam/list
 import gleeunit/should
 
@@ -27,6 +28,19 @@ pub fn parse_action_test() {
 
   run.get_actions("test/testdata/gleam/empty.toml", "")
   |> should.be_error
+
+  run.get_actions("test/testdata/gleam/invalid.toml", "no-actions")
+  |> should.be_error
+
+  run.get_actions("test/testdata/gleam/invalid.toml", "actions-wrong-type")
+  |> should.be_error
+
+  let assert [d] =
+    run.get_actions("test/testdata/gleam/invalid.toml", "no-command")
+    |> should.be_ok
+    |> list.map(run.parse_action)
+
+  should.be_error(d)
 
   run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
   |> should.be_ok
