@@ -1,4 +1,4 @@
-name: Test
+name: CI
 
 on:
   push:
@@ -22,6 +22,8 @@ jobs:
           gleam-version: ${{ env.gleam }}
           rebar3-version: ${{ env.rebar }}
       - run: gleam format --check src test
+      - run: gleam check
+      - run: gleam build
       - run: ./scripts/update.sh
 
   erlang:
