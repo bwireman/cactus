@@ -4,6 +4,7 @@ import cactus/write.{valid_hooks}
 import gleam/io
 import gleam/list
 import gleam/result.{replace}
+import gleam/string
 import shellout
 
 pub fn main() {
@@ -11,6 +12,9 @@ pub fn main() {
 
   let cmd =
     shellout.arguments()
+    |> list.filter(fn(a) { !string.ends_with(a, ".js") })
+    |> list.filter(fn(a) { !string.ends_with(a, ".mjs") })
+    |> list.filter(fn(a) { !string.ends_with(a, ".cjs") })
     |> list.last()
     |> result.unwrap("")
 

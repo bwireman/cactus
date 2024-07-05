@@ -23,12 +23,14 @@ pub const valid_hooks = [
 fn create_script(command: String) {
   io.println("Initializing hook: '" <> command <> "'")
   use pwd <- try(simplifile.current_directory())
-  let path =
+  let hooks_path =
     pwd
     |> filepath.join(".git")
     |> filepath.join("hooks")
-    |> filepath.join(command)
 
+  let path = filepath.join(hooks_path, command)
+
+  let _ = simplifile.create_directory(hooks_path)
   let _ = simplifile.create_file(path)
   use _ <- try(simplifile.write(path, tmpl <> command))
 
