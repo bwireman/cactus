@@ -28,6 +28,10 @@ pub fn parse_action_test() {
   run.get_actions("test/testdata/gleam/empty.toml", "")
   |> should.be_error
 
+  run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
+  |> should.be_ok
+  |> should.equal([])
+
   run.get_actions("test/testdata/gleam/fake.toml", "")
   |> should.be_error
 }

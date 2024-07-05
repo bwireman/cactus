@@ -6,3 +6,4 @@ erl_crash.dump
 node_modules/
 .vscode
 key._
+test/testdata/scripts
