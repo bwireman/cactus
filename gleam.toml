@@ -1,5 +1,5 @@
 name = "cactus"
-version = "0.1.0"
+version = "0.2.0"
 licences = ["MIT"]
 repository = { type = "github", user = "bwireman", repo = "cactus" }
 description = "A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and more!"
@@ -17,17 +17,18 @@ allow_all = true
 
 [cactus.pre-commit]
 actions = [
-    { command = "format", kind = "sub_command", args = ["--check"] },
-    { command = "test", kind = "sub_command" },
+    { command = "format", kind = "sub_command", args = [
+        "--check",
+    ] },
     { command = "./scripts/test.sh", kind = "binary" },
 ]
 
 [cactus.pre-push]
 actions = [
-    { command = "format", kind = "sub_command", args = ["--check"] },
-    { command = "test", kind = "sub_command" },
     { command = "./scripts/test.sh", kind = "binary" },
-    { command = "go_over", kind = "module", args=["--outdated"] },
+    { command = "go_over", kind = "module", args = [
+        "--outdated",
+    ] },
 ]
 
 [dependencies]

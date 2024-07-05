@@ -33,14 +33,8 @@ pub fn main() {
 
     arg -> {
       case list.contains(valid_hooks, arg) {
-        True -> {
-          run.run(gleam_toml, arg)
-          |> replace([])
-        }
-        False -> {
-          io.println_error("Invalid arg: '" <> arg <> "'")
-          Error(CLIErr)
-        }
+        True -> replace(run.run(gleam_toml, arg), [])
+        False -> Error(CLIErr(arg))
       }
     }
   }
@@ -48,7 +42,7 @@ pub fn main() {
   case res {
     Ok(_) -> Nil
     Error(reason) -> {
-      io.println_error(cmd <> " failed. Reason: " <> str(reason))
+      io.println_error("'" <> cmd <> "' hook failed. Reason: " <> str(reason))
       shellout.exit(1)
     }
   }

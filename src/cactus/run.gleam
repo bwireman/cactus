@@ -1,4 +1,4 @@
-import cactus/errors.{ActionFailed, InvalidToml, MissingField, as_err}
+import cactus/errors.{ActionFailedErr, InvalidTomlErr, MissingFieldErr, as_err}
 import cactus/util
 import gleam/io
 import gleam/list
@@ -22,7 +22,7 @@ pub fn parse_action(raw: Toml) {
     tom.InlineTable(t) -> {
       use command <- try(as_err(
         tom.get_string(t, ["command"]),
-        MissingField("command"),
+        MissingFieldErr("command"),
       ))
       let kind =
         tom.get_string(t, ["kind"])
@@ -43,7 +43,7 @@ pub fn parse_action(raw: Toml) {
 
       Ok(Action(command: command, kind: action_kind, args: args))
     }
-    _ -> Error(InvalidToml)
+    _ -> Error(InvalidTomlErr)
   }
 }
 
@@ -51,11 +51,11 @@ pub fn get_actions(path: String, action: String) {
   use manifest <- try(util.parse_gleam_toml(path))
   use action_body <- try(as_err(
     tom.get_table(manifest, ["cactus", action]),
-    MissingField("cactus." <> action),
+    MissingFieldErr("cactus." <> action),
   ))
   as_err(
     tom.get_array(action_body, ["actions"]),
-    MissingField("cactus." <> action <> ".actions"),
+    MissingFieldErr("cactus." <> action <> ".actions"),
   )
 }
 
@@ -75,15 +75,13 @@ pub fn run(path: String, action: String) {
       }
 
       io.println("Running: " <> bin <> " " <> string.join(args, " "))
+
       case shellout.command(run: bin, with: args, in: ".", opt: []) {
         Ok(res) -> {
           io.print(res)
           Ok(res)
         }
-        Error(#(_, err)) -> {
-          io.print_error(err)
-          Error(ActionFailed)
-        }
+        Error(#(_, err)) -> Error(ActionFailedErr(err))
       }
     })
   })
