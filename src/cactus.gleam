@@ -1,31 +1,32 @@
-import cactus/errors.{CLIErr, str}
+import cactus/errors.{CLIErr, as_fs_err, str}
 import cactus/run
-import cactus/util
 import cactus/write.{valid_hooks}
 import filepath
 import gleam/io
 import gleam/list
-import gleam/result.{replace}
+import gleam/result
 import gleam/string
 import shellout
 import simplifile
 
+fn get_cmd() {
+  shellout.arguments()
+  |> list.filter(fn(a) { !string.ends_with(a, ".js") })
+  |> list.filter(fn(a) { !string.ends_with(a, ".mjs") })
+  |> list.filter(fn(a) { !string.ends_with(a, ".cjs") })
+  |> list.last()
+  |> result.unwrap("")
+}
+
 pub fn main() {
-  let gleam_toml = util.gleam_toml_path()
-  let assert Ok(pwd) = simplifile.current_directory()
+  use pwd <- result.map(as_fs_err(simplifile.current_directory(), "."))
+  let gleam_toml = filepath.join(pwd, "gleam.toml")
   let hooks_dir =
     pwd
     |> filepath.join(".git")
     |> filepath.join("hooks")
 
-  let cmd =
-    shellout.arguments()
-    |> list.filter(fn(a) { !string.ends_with(a, ".js") })
-    |> list.filter(fn(a) { !string.ends_with(a, ".mjs") })
-    |> list.filter(fn(a) { !string.ends_with(a, ".cjs") })
-    |> list.last()
-    |> result.unwrap("")
-
+  let cmd = get_cmd()
   let res = case cmd {
     "" | "init" -> {
       write.init(hooks_dir, gleam_toml)
@@ -33,7 +34,7 @@ pub fn main() {
 
     arg -> {
       case list.contains(valid_hooks, arg) {
-        True -> replace(run.run(gleam_toml, arg), [])
+        True -> run.run(gleam_toml, arg)
         False -> Error(CLIErr(arg))
       }
     }

@@ -1,4 +1,6 @@
-import cactus/errors.{ActionFailedErr, InvalidTomlErr, MissingFieldErr, as_err}
+import cactus/errors.{
+  type CactusErr, ActionFailedErr, InvalidTomlErr, as_invalid_field_err,
+}
 import cactus/util
 import gleam/io
 import gleam/list
@@ -17,13 +19,10 @@ pub type Action {
   Action(command: String, kind: ActionKind, args: List(String))
 }
 
-pub fn parse_action(raw: Toml) {
+pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
   case raw {
     tom.InlineTable(t) -> {
-      use command <- try(as_err(
-        tom.get_string(t, ["command"]),
-        MissingFieldErr("command"),
-      ))
+      use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
       let kind =
         tom.get_string(t, ["kind"])
         |> result.map(string.lowercase)
@@ -47,19 +46,18 @@ pub fn parse_action(raw: Toml) {
   }
 }
 
-pub fn get_actions(path: String, action: String) {
+pub fn get_actions(
+  path: String,
+  action: String,
+) -> Result(List(Toml), CactusErr) {
   use manifest <- try(util.parse_gleam_toml(path))
-  use action_body <- try(as_err(
-    tom.get_table(manifest, ["cactus", action]),
-    MissingFieldErr("cactus." <> action),
-  ))
-  as_err(
-    tom.get_array(action_body, ["actions"]),
-    MissingFieldErr("cactus." <> action <> ".actions"),
+  use action_body <- try(
+    as_invalid_field_err(tom.get_table(manifest, ["cactus", action])),
   )
+  as_invalid_field_err(tom.get_array(action_body, ["actions"]))
 }
 
-pub fn run(path: String, action: String) {
+pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   use actions <- try(get_actions(path, action))
   actions
   |> list.map(parse_action)
@@ -88,7 +86,7 @@ pub fn run(path: String, action: String) {
   |> result.all
 }
 
-pub fn as_string(t: Toml) {
+pub fn as_string(t: Toml) -> String {
   case t {
     tom.String(x) -> x
     _ -> {
