@@ -37,10 +37,14 @@ Optional settings that can be added to your project's `gleam.toml`
 actions = [
     {
       # name of the command or binary to be run
+      # required
       command = "format",
       # is it a gleam subcommand, a binary or a module
+      # ["sub_command", "binary", "module"]
+      # default: module
       kind = "sub_command",
       # additional args to be passed to the command
+      # default: []
       args = ["--check"]
     },
 ]
