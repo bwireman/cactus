@@ -1,3 +1,4 @@
+import cactus/errors.{CLIErr, str}
 import cactus/run
 import cactus/util
 import cactus/write.{valid_hooks}
@@ -38,8 +39,7 @@ pub fn main() {
         }
         False -> {
           io.println_error("Invalid arg: '" <> arg <> "'")
-          shellout.exit(1)
-          Error(Nil)
+          Error(CLIErr)
         }
       }
     }
@@ -47,8 +47,8 @@ pub fn main() {
 
   case res {
     Ok(_) -> Nil
-    Error(_) -> {
-      io.println_error(cmd <> " failed")
+    Error(reason) -> {
+      io.println_error(cmd <> " failed. Reason: " <> str(reason))
       shellout.exit(1)
     }
   }
