@@ -1,11 +1,12 @@
+import cactus/errors.{FSErr, as_err}
 import filepath
 import gleam/result
 import simplifile
 import tom
 
 pub fn parse_gleam_toml(path: String) {
-  use body <- result.try(simplifile.read(path) |> result.nil_error)
-  tom.parse(body) |> result.nil_error
+  use body <- result.try(simplifile.read(path) |> as_err(FSErr))
+  tom.parse(body) |> as_err(FSErr)
 }
 
 pub fn gleam_toml_path() {

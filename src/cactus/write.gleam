@@ -1,3 +1,4 @@
+import cactus/errors.{FSErr, MissingField, as_err}
 import cactus/util
 import filepath
 import gleam/dict
@@ -26,7 +27,7 @@ pub fn create_script(hooks_dir: String, command: String) {
 
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
-  use _ <- try(simplifile.write(path, tmpl <> command) |> result.nil_error)
+  use _ <- try(as_err(simplifile.write(path, tmpl <> command), FSErr))
 
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
@@ -36,15 +37,16 @@ pub fn create_script(hooks_dir: String, command: String) {
     simplifile.FilePermissions(user: all, group: all, other: all),
   )
   |> result.replace(command)
-  |> result.nil_error
+  |> as_err(FSErr)
 }
 
 pub fn init(hooks_dir: String, path: String) {
   {
     use manifest <- try(util.parse_gleam_toml(path))
-    use action_body <- result.map(
-      tom.get_table(manifest, ["cactus"]) |> result.nil_error,
-    )
+    use action_body <- result.map(as_err(
+      tom.get_table(manifest, ["cactus"]),
+      MissingField("cactus"),
+    ))
 
     action_body
     |> dict.keys()
@@ -53,5 +55,4 @@ pub fn init(hooks_dir: String, path: String) {
     |> result.all
   }
   |> result.flatten
-  |> result.nil_error
 }
