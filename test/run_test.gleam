@@ -1,5 +1,4 @@
 import cactus/run
-import gleam/io
 import gleam/list
 import gleeunit/should
 
