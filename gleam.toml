@@ -14,7 +14,7 @@ version = "1.0.0"
 [hooks.pre-commit]
 actions = [
     { command = "ls", kind = "binary" },
-    { command = "test", kind = "gleam_command" },
+    { command = "test", kind = "sub_command" },
 ]
 
 [dependencies]

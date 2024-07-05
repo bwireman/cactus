@@ -1,6 +1,7 @@
 import filepath
 import git_gleam_hooks/util
 import gleam/dict
+import gleam/io
 import gleam/list
 import gleam/result.{try}
 import gleam/set
@@ -20,6 +21,7 @@ pub const valid_hooks = [
 ]
 
 fn write(command: String) {
+  io.println("Initializing hook: '" <> command <> "'")
   use pwd <- try(simplifile.current_directory())
   let path =
     pwd
@@ -33,11 +35,10 @@ fn write(command: String) {
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
 
-  let _ =
-    simplifile.set_permissions(
-      path,
-      simplifile.FilePermissions(user: all, group: all, other: all),
-    )
+  simplifile.set_permissions(
+    path,
+    simplifile.FilePermissions(user: all, group: all, other: all),
+  )
 }
 
 pub fn init(path: String) {

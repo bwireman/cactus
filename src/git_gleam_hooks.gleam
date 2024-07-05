@@ -1,33 +1,44 @@
-import filepath
 import git_gleam_hooks/run
+import git_gleam_hooks/util
 import git_gleam_hooks/write.{valid_hooks}
+import gleam/io
 import gleam/list
+import gleam/result.{replace}
 import shellout
-import simplifile
-
-fn toml_path() {
-  let assert Ok(pwd) = simplifile.current_directory()
-  filepath.join(pwd, "gleam.toml")
-}
 
 pub fn main() {
-  let gleam_toml = toml_path()
-  case shellout.arguments() {
-    [] | ["init"] -> {
+  let gleam_toml = util.toml_path()
+
+  let cmd =
+    shellout.arguments()
+    |> list.last()
+    |> result.unwrap("")
+
+  let res = case cmd {
+    "" | "init" -> {
       write.init(gleam_toml)
-      Nil
     }
 
-    [arg] -> {
+    arg -> {
       case list.contains(valid_hooks, arg) {
         True -> {
           run.run(gleam_toml, arg)
-          Nil
+          |> replace(Nil)
         }
-        False -> todo
+        False -> {
+          io.println_error("Invalid arg: '" <> arg <> "'")
+          shellout.exit(1)
+          Error(Nil)
+        }
       }
     }
+  }
 
-    _ -> todo
+  case res {
+    Ok(_) -> Nil
+    Error(_) -> {
+      io.println_error(cmd <> " failed")
+      shellout.exit(1)
+    }
   }
 }

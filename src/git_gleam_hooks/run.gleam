@@ -35,6 +35,7 @@ fn parse(raw: Toml) {
     }
     _ -> panic as "fuck"
   }
+  |> result.nil_error
 }
 
 pub fn run(path: String, action: String) {
@@ -42,14 +43,14 @@ pub fn run(path: String, action: String) {
   use action_body <- try(
     tom.get_table(manifest, ["hooks", action]) |> result.nil_error,
   )
-  use actions <- result.map(
+  use actions <- result.try(
     tom.get_array(action_body, ["actions"]) |> result.nil_error,
   )
 
   actions
   |> list.map(parse)
   |> list.map(fn(parse_result) {
-    result.map(parse_result, fn(action) {
+    result.try(parse_result, fn(action) {
       let #(bin, args) = case action.kind {
         Module -> #("gleam", ["run", "-m", action.command])
         SubCommand -> #("gleam", [action.command])
@@ -57,9 +58,17 @@ pub fn run(path: String, action: String) {
       }
 
       case shellout.command(run: bin, with: args, in: ".", opt: []) {
-        Ok(res) -> io.print(res)
-        Error(#(_, err)) -> io.print_error(err)
+        Ok(res) -> {
+          io.print(res)
+          Ok(Nil)
+        }
+        Error(#(_, err)) -> {
+          io.print_error(err)
+          Error(Nil)
+        }
       }
     })
   })
+  |> result.all
+  |> result.nil_error
 }
