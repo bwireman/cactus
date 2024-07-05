@@ -1,7 +1,8 @@
 import filepath
+import git_gleam_hooks/util
 import gleam/dict
 import gleam/list
-import gleam/result
+import gleam/result.{try}
 import gleam/set
 import simplifile
 import tom
@@ -19,7 +20,7 @@ pub const valid_hooks = [
 ]
 
 fn write(command: String) {
-  use pwd <- result.try(simplifile.current_directory())
+  use pwd <- try(simplifile.current_directory())
   let path =
     pwd
     |> filepath.join(".git")
@@ -27,7 +28,7 @@ fn write(command: String) {
     |> filepath.join(command)
 
   let _ = simplifile.create_file(path)
-  use _ <- result.try(simplifile.write(path, tmpl <> command))
+  use _ <- try(simplifile.write(path, tmpl <> command))
 
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
@@ -40,8 +41,7 @@ fn write(command: String) {
 }
 
 pub fn init(path: String) {
-  use body <- result.try(simplifile.read(path) |> result.nil_error)
-  use manifest <- result.try(tom.parse(body) |> result.nil_error)
+  use manifest <- try(util.parse_manifest(path))
   use action_body <- result.map(
     tom.get_table(manifest, ["hooks"]) |> result.nil_error,
   )
