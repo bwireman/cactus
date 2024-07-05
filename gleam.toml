@@ -17,6 +17,13 @@ actions = [
     { command = "test", kind = "sub_command" },
 ]
 
+[cactus.pre-push]
+actions = [
+    { command = "format", kind = "sub_command", args = ["--check"] },
+    { command = "test", kind = "sub_command" },
+    { command = "go_over", kind = "module", args=["--outdated"] },
+]
+
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 tom = ">= 1.0.0 and < 2.0.0"
@@ -26,3 +33,4 @@ filepath = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+go_over = ">= 2.1.0 and < 3.0.0"

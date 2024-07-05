@@ -20,7 +20,7 @@ pub const valid_hooks = [
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update",
 ]
 
-fn write(command: String) {
+fn create_script(command: String) {
   io.println("Initializing hook: '" <> command <> "'")
   use pwd <- try(simplifile.current_directory())
   let path =
@@ -50,6 +50,6 @@ pub fn init(path: String) {
   action_body
   |> dict.keys()
   |> list.filter(list.contains(valid_hooks, _))
-  |> list.map(write)
+  |> list.map(create_script)
   Nil
 }

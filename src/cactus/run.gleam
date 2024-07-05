@@ -19,9 +19,11 @@ type Action {
 fn parse(raw: Toml) {
   case raw {
     tom.InlineTable(t) -> {
-      use command <- try(tom.get_string(t, ["command"]))
+      use command <- try(tom.get_string(t, ["command"]) |> result.nil_error)
       use kind <- try(
-        tom.get_string(t, ["kind"]) |> result.map(string.lowercase),
+        tom.get_string(t, ["kind"])
+        |> result.map(string.lowercase)
+        |> result.nil_error,
       )
       let args =
         tom.get_array(t, ["args"])
@@ -35,9 +37,9 @@ fn parse(raw: Toml) {
         _ -> Module
       }
 
-      Ok(Action(command, action_kind, args))
+      Ok(Action(command: command, kind: action_kind, args: args))
     }
-    _ -> panic as "fuck"
+    _ -> Error(Nil)
   }
   |> result.nil_error
 }
@@ -58,7 +60,7 @@ pub fn run(path: String, action: String) {
       let #(bin, args) = case action.kind {
         Module -> #(
           "gleam",
-          list.append(["run", "-m", action.command], action.args),
+          list.append(["run", "-m", action.command, "--"], action.args),
         )
         SubCommand -> #("gleam", list.append([action.command], action.args))
         Binary -> #(action.command, action.args)
@@ -83,6 +85,10 @@ pub fn run(path: String, action: String) {
 pub fn as_string(t: Toml) {
   case t {
     tom.String(x) -> x
-    _ -> panic as "invalid toml"
+    _ -> {
+      io.println_error("Invalid toml field")
+      shellout.exit(1)
+      panic as "unreachable"
+    }
   }
 }
