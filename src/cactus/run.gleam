@@ -13,7 +13,7 @@ type ActionKind {
 }
 
 type Action {
-  Action(command: String, kind: ActionKind, additional_flags: List(String))
+  Action(command: String, kind: ActionKind, args: List(String))
 }
 
 fn parse(raw: Toml) {
@@ -23,8 +23,8 @@ fn parse(raw: Toml) {
       use kind <- try(
         tom.get_string(t, ["kind"]) |> result.map(string.lowercase),
       )
-      let additional_flags =
-        tom.get_array(t, ["additional_flags"])
+      let args =
+        tom.get_array(t, ["args"])
         |> result.unwrap([])
         |> list.map(as_string)
 
@@ -35,7 +35,7 @@ fn parse(raw: Toml) {
         _ -> Module
       }
 
-      Ok(Action(command, action_kind, additional_flags))
+      Ok(Action(command, action_kind, args))
     }
     _ -> panic as "fuck"
   }
@@ -58,13 +58,10 @@ pub fn run(path: String, action: String) {
       let #(bin, args) = case action.kind {
         Module -> #(
           "gleam",
-          list.append(["run", "-m", action.command], action.additional_flags),
+          list.append(["run", "-m", action.command], action.args),
         )
-        SubCommand -> #(
-          "gleam",
-          list.append([action.command], action.additional_flags),
-        )
-        Binary -> #(action.command, action.additional_flags)
+        SubCommand -> #("gleam", list.append([action.command], action.args))
+        Binary -> #(action.command, action.args)
       }
 
       case shellout.command(run: bin, with: args, in: ".", opt: []) {

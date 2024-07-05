@@ -13,7 +13,7 @@ version = "1.0.0"
 # https://gleam.run/writing-gleam/gleam-toml/.
 [cactus.pre-commit]
 actions = [
-    { command = "ls", kind = "binary" },
+    { command = "format", kind = "sub_command", args = ["--check"] },
     { command = "test", kind = "sub_command" },
 ]
 

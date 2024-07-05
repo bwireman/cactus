@@ -1,5 +1,5 @@
-import filepath
 import cactus/util
+import filepath
 import gleam/dict
 import gleam/io
 import gleam/list
