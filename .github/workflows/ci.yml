@@ -10,7 +10,6 @@ env:
   otp: "27.0"
   gleam: "1.2.0"
   rebar: "3"
-  nodelts: 20.x
 
 jobs:
   build:
@@ -23,6 +22,7 @@ jobs:
           gleam-version: ${{ env.gleam }}
           rebar3-version: ${{ env.rebar }}
       - run: gleam format --check src test
+      - run: ./scripts/update.sh
 
   erlang:
     runs-on: ubuntu-latest

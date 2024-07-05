@@ -8,7 +8,7 @@ import gleam/string
 import shellout
 
 pub fn main() {
-  let gleam_toml = util.toml_path()
+  let gleam_toml = util.gleam_toml_path()
 
   let cmd =
     shellout.arguments()
