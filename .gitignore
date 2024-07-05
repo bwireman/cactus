@@ -2,5 +2,7 @@
 *.ez
 /build
 erl_crash.dump
-.vscode
 .go-over
+node_modules/
+.vscode
+key._

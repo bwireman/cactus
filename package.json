@@ -1,0 +1,9 @@
+{
+  "name": "cactus",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "git@github.com:bwireman/cactus.git",
+  "author": "bwireman <bwireman1@gmail.com>",
+  "license": "MIT",
+  "private": true
+}
