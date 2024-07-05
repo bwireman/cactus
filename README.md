@@ -1,20 +1,20 @@
-# git_gleam_hooks
+# cactus
 
-[![Package Version](https://img.shields.io/hexpm/v/git_gleam_hooks)](https://hex.pm/packages/git_gleam_hooks)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/git_gleam_hooks/)
+[![Package Version](https://img.shields.io/hexpm/v/cactus)](https://hex.pm/packages/cactus)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/cactus/)
 
 ```sh
-gleam add git_gleam_hooks
+gleam add cactus
 ```
 ```gleam
-import git_gleam_hooks
+import cactus
 
 pub fn main() {
   // TODO: An example of the project in use
 }
 ```
 
-Further documentation can be found at <https://hexdocs.pm/git_gleam_hooks>.
+Further documentation can be found at <https://hexdocs.pm/cactus>.
 
 ## Development
 

@@ -1,4 +1,4 @@
-import git_gleam_hooks/util
+import cactus/util
 import gleam/io
 import gleam/list
 import gleam/result.{try}
@@ -45,7 +45,7 @@ fn parse(raw: Toml) {
 pub fn run(path: String, action: String) {
   use manifest <- try(util.parse_manifest(path))
   use action_body <- try(
-    tom.get_table(manifest, ["hooks", action]) |> result.nil_error,
+    tom.get_table(manifest, ["cactus", action]) |> result.nil_error,
   )
   use actions <- result.try(
     tom.get_array(action_body, ["actions"]) |> result.nil_error,

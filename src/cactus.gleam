@@ -1,6 +1,6 @@
-import git_gleam_hooks/run
-import git_gleam_hooks/util
-import git_gleam_hooks/write.{valid_hooks}
+import cactus/run
+import cactus/util
+import cactus/write.{valid_hooks}
 import gleam/io
 import gleam/list
 import gleam/result.{replace}

@@ -1,5 +1,5 @@
 import filepath
-import git_gleam_hooks/util
+import cactus/util
 import gleam/dict
 import gleam/io
 import gleam/list
@@ -9,10 +9,10 @@ import simplifile
 import tom
 
 @target(erlang)
-const tmpl = "gleam run -m git_gleam_hooks --target erlang -- "
+const tmpl = "gleam run -m cactus --target erlang -- "
 
 @target(javascript)
-const tmpl = "gleam run -m git_gleam_hooks --target javascript -- "
+const tmpl = "gleam run -m cactus --target javascript -- "
 
 pub const valid_hooks = [
   "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-update",
@@ -44,7 +44,7 @@ fn write(command: String) {
 pub fn init(path: String) {
   use manifest <- try(util.parse_manifest(path))
   use action_body <- result.map(
-    tom.get_table(manifest, ["hooks"]) |> result.nil_error,
+    tom.get_table(manifest, ["cactus"]) |> result.nil_error,
   )
 
   action_body
