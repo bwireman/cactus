@@ -1,14 +1,21 @@
 import cactus/run
 import cactus/util
 import cactus/write.{valid_hooks}
+import filepath
 import gleam/io
 import gleam/list
 import gleam/result.{replace}
 import gleam/string
 import shellout
+import simplifile
 
 pub fn main() {
   let gleam_toml = util.gleam_toml_path()
+  let assert Ok(pwd) = simplifile.current_directory()
+  let hooks_dir =
+    pwd
+    |> filepath.join(".git")
+    |> filepath.join("hooks")
 
   let cmd =
     shellout.arguments()
@@ -20,14 +27,14 @@ pub fn main() {
 
   let res = case cmd {
     "" | "init" -> {
-      write.init(gleam_toml)
+      write.init(hooks_dir, gleam_toml)
     }
 
     arg -> {
       case list.contains(valid_hooks, arg) {
         True -> {
           run.run(gleam_toml, arg)
-          |> replace(Nil)
+          |> replace([])
         }
         False -> {
           io.println_error("Invalid arg: '" <> arg <> "'")

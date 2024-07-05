@@ -9,10 +9,10 @@ import simplifile
 import tom
 
 @target(erlang)
-const tmpl = "gleam run -m cactus --target erlang -- "
+pub const tmpl = "gleam run -m cactus --target erlang -- "
 
 @target(javascript)
-const tmpl = "gleam run -m cactus --target javascript -- "
+pub const tmpl = "gleam run -m cactus --target javascript -- "
 
 pub const valid_hooks = [
   "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-update",
@@ -20,19 +20,13 @@ pub const valid_hooks = [
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update",
 ]
 
-fn create_script(command: String) {
+pub fn create_script(hooks_dir: String, command: String) {
   io.println("Initializing hook: '" <> command <> "'")
-  use pwd <- try(simplifile.current_directory())
-  let hooks_path =
-    pwd
-    |> filepath.join(".git")
-    |> filepath.join("hooks")
+  let path = filepath.join(hooks_dir, command)
 
-  let path = filepath.join(hooks_path, command)
-
-  let _ = simplifile.create_directory(hooks_path)
+  let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
-  use _ <- try(simplifile.write(path, tmpl <> command))
+  use _ <- try(simplifile.write(path, tmpl <> command) |> result.nil_error)
 
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
@@ -41,17 +35,23 @@ fn create_script(command: String) {
     path,
     simplifile.FilePermissions(user: all, group: all, other: all),
   )
+  |> result.replace(command)
+  |> result.nil_error
 }
 
-pub fn init(path: String) {
-  use manifest <- try(util.parse_gleam_toml(path))
-  use action_body <- result.map(
-    tom.get_table(manifest, ["cactus"]) |> result.nil_error,
-  )
+pub fn init(hooks_dir: String, path: String) {
+  {
+    use manifest <- try(util.parse_gleam_toml(path))
+    use action_body <- result.map(
+      tom.get_table(manifest, ["cactus"]) |> result.nil_error,
+    )
 
-  action_body
-  |> dict.keys()
-  |> list.filter(list.contains(valid_hooks, _))
-  |> list.map(create_script)
-  Nil
+    action_body
+    |> dict.keys()
+    |> list.filter(list.contains(valid_hooks, _))
+    |> list.map(create_script(hooks_dir, _))
+    |> result.all
+  }
+  |> result.flatten
+  |> result.nil_error
 }
