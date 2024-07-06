@@ -1,6 +1,6 @@
-import cactus/errors.{CLIErr, as_fs_err, str}
 import cactus/run
-import cactus/write.{valid_hooks}
+import cactus/util.{CLIErr, as_fs_err, str}
+import cactus/write
 import filepath
 import gleam/io
 import gleam/list
@@ -9,11 +9,15 @@ import gleam/string
 import shellout
 import simplifile
 
+fn not_ends_with(v: String, suffix: String) -> Bool {
+  !string.ends_with(v, suffix)
+}
+
 fn get_cmd() {
   shellout.arguments()
-  |> list.filter(fn(a) { !string.ends_with(a, ".js") })
-  |> list.filter(fn(a) { !string.ends_with(a, ".mjs") })
-  |> list.filter(fn(a) { !string.ends_with(a, ".cjs") })
+  |> list.filter(not_ends_with(_, ".js"))
+  |> list.filter(not_ends_with(_, ".mjs"))
+  |> list.filter(not_ends_with(_, ".cjs"))
   |> list.last()
   |> result.unwrap("")
 }
@@ -33,7 +37,7 @@ pub fn main() {
     }
 
     arg -> {
-      case list.contains(valid_hooks, arg) {
+      case write.is_valid_hook_name(arg) {
         True -> run.run(gleam_toml, arg)
         False -> Error(CLIErr(arg))
       }
@@ -43,7 +47,9 @@ pub fn main() {
   case res {
     Ok(_) -> Nil
     Error(reason) -> {
-      io.println_error("'" <> cmd <> "' hook failed. Reason: " <> str(reason))
+      io.println_error(
+        util.quote(cmd) <> " hook failed. Reason: " <> str(reason),
+      )
       shellout.exit(1)
     }
   }

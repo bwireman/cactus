@@ -1,13 +1,17 @@
-import cactus/errors.{
-  type CactusErr, ActionFailedErr, InvalidTomlErr, as_invalid_field_err,
+import cactus/util.{
+  type CactusErr, ActionFailedErr, InvalidFieldCustomErr, as_invalid_field_err,
+  cactus,
 }
-import cactus/util
 import gleam/io
 import gleam/list
 import gleam/result.{try}
 import gleam/string
 import shellout
 import tom.{type Toml}
+
+const actions = "actions"
+
+const gleam = "gleam"
 
 pub type ActionKind {
   Module
@@ -28,13 +32,14 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
         |> result.map(string.lowercase)
         |> result.unwrap("module")
 
-      let args =
+      use args <- try(
         tom.get_array(t, ["args"])
         |> result.unwrap([])
         |> list.map(as_string)
+        |> result.all(),
+      )
 
       let action_kind = case kind {
-        "module" -> Module
         "sub_command" -> SubCommand
         "binary" -> Binary
         _ -> Module
@@ -42,7 +47,7 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
 
       Ok(Action(command: command, kind: action_kind, args: args))
     }
-    _ -> Error(InvalidTomlErr)
+    _ -> Error(InvalidFieldCustomErr(actions))
   }
 }
 
@@ -52,9 +57,9 @@ pub fn get_actions(
 ) -> Result(List(Toml), CactusErr) {
   use manifest <- try(util.parse_gleam_toml(path))
   use action_body <- try(
-    as_invalid_field_err(tom.get_table(manifest, ["cactus", action])),
+    as_invalid_field_err(tom.get_table(manifest, [cactus, action])),
   )
-  as_invalid_field_err(tom.get_array(action_body, ["actions"]))
+  as_invalid_field_err(tom.get_array(action_body, [actions]))
 }
 
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
@@ -64,16 +69,12 @@ pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   |> list.map(fn(parse_result) {
     result.try(parse_result, fn(action) {
       let #(bin, args) = case action.kind {
-        Module -> #(
-          "gleam",
-          list.append(["run", "-m", action.command, "--"], action.args),
-        )
-        SubCommand -> #("gleam", list.append([action.command], action.args))
+        Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
+        SubCommand -> #(gleam, [action.command, ..action.args])
         Binary -> #(action.command, action.args)
       }
 
-      io.println("Running: " <> bin <> " " <> string.join(args, " "))
-
+      io.println(string.join(["Running", bin, ..args], " "))
       case shellout.command(run: bin, with: args, in: ".", opt: []) {
         Ok(res) -> {
           io.print(res)
@@ -86,13 +87,11 @@ pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   |> result.all
 }
 
-pub fn as_string(t: Toml) -> String {
+pub fn as_string(t: Toml) -> Result(String, CactusErr) {
   case t {
-    tom.String(x) -> x
+    tom.String(v) -> Ok(v)
     _ -> {
-      io.println_error("Invalid toml field")
-      shellout.exit(1)
-      panic as "unreachable"
+      Error(InvalidFieldCustomErr("args"))
     }
   }
 }
