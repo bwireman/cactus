@@ -20,3 +20,5 @@ echo -e "${GREEN}==> deno${NC}"
 
 echo -e "${GREEN}==> bun${NC}"
 ./scripts/target_test.sh javascript bun
+
+gleam run

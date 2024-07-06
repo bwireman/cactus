@@ -30,13 +30,12 @@ pub fn create_script(
 ) -> Result(String, CactusErr) {
   io.println("Initializing hook: " <> util.quote(command))
   let path = filepath.join(hooks_dir, command)
+  let all =
+    set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
 
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
   use _ <- try(as_fs_err(simplifile.write(path, tmpl <> command), path))
-
-  let all =
-    set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
 
   simplifile.set_permissions(
     path,

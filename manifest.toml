@@ -9,6 +9,7 @@ packages = [
   { name = "gleam_stdlib", version = "0.38.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "663CF11861179AF415A625307447775C09404E752FF99A24E2057C835319F1BE" },
   { name = "gleamsver", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleamsver", source = "hex", outer_checksum = "66FAD161BE3E28FF26B573C7D3663335E6B4CE5C0B12AC4AF33116572EE6C19A" },
   { name = "gleeunit", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "F7A7228925D3EE7D0813C922E062BFD6D7E9310F0BEE585D3A42F3307E3CFD13" },
+  { name = "gleither", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleither", source = "hex", outer_checksum = "A215388078C9B36403A8B9ECBE4B1B1A1F2DC2A1606ACD9DB0BFB1AEEBA94F7B" },
   { name = "go_over", version = "2.1.0", build_tools = ["gleam"], requirements = ["birl", "filepath", "gleam_hexpm", "gleam_json", "gleam_stdlib", "gleamsver", "shellout", "simplifile", "tom", "yamerl"], otp_app = "go_over", source = "hex", outer_checksum = "2C82D50418D75DDE8347E27BA547EB2B2017BE8E7B1F576A3343EB5B90C21932" },
   { name = "ranger", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "ranger", source = "hex", outer_checksum = "1566C272B1D141B3BBA38B25CB761EF56E312E79EC0E2DFD4D3C19FB0CC1F98C" },
   { name = "shellout", version = "1.6.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "shellout", source = "hex", outer_checksum = "E2FCD18957F0E9F67E1F497FC9FF57393392F8A9BAEAEA4779541DE7A68DD7E0" },
@@ -21,6 +22,7 @@ packages = [
 filepath = { version = ">= 1.0.0 and < 2.0.0" }
 gleam_stdlib = { version = ">= 0.34.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
+gleither = { version = ">= 2.0.0 and < 3.0.0" }
 go_over = { version = ">= 2.1.0 and < 3.0.0" }
 shellout = { version = ">= 1.6.0 and < 2.0.0" }
 simplifile = { version = ">= 2.0.1 and < 3.0.0" }

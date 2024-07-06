@@ -1,5 +1,5 @@
 import cactus/run
-import cactus/util.{CLIErr, as_fs_err, str}
+import cactus/util.{type CactusErr, CLIErr, as_fs_err, str}
 import cactus/write
 import filepath
 import gleam/io
@@ -13,7 +13,7 @@ fn not_ends_with(v: String, suffix: String) -> Bool {
   !string.ends_with(v, suffix)
 }
 
-fn get_cmd() {
+fn get_cmd() -> String {
   shellout.arguments()
   |> list.filter(not_ends_with(_, ".js"))
   |> list.filter(not_ends_with(_, ".mjs"))
@@ -22,7 +22,7 @@ fn get_cmd() {
   |> result.unwrap("")
 }
 
-pub fn main() {
+pub fn main() -> Result(Nil, CactusErr) {
   use pwd <- result.map(as_fs_err(simplifile.current_directory(), "."))
   let gleam_toml = filepath.join(pwd, "gleam.toml")
   let hooks_dir =

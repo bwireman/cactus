@@ -1,11 +1,12 @@
 import cactus/util.{
-  type CactusErr, ActionFailedErr, InvalidFieldCustomErr, as_invalid_field_err,
-  cactus,
+  type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
 }
 import gleam/io
 import gleam/list
+import gleam/option.{Some}
 import gleam/result.{try}
 import gleam/string
+import gleither.{Right}
 import shellout
 import tom.{type Toml}
 
@@ -27,37 +28,38 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
   case raw {
     tom.InlineTable(t) -> {
       use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
-      let kind =
-        tom.get_string(t, ["kind"])
-        |> result.map(string.lowercase)
-        |> result.unwrap("module")
-
       use args <- try(
         tom.get_array(t, ["args"])
         |> result.unwrap([])
         |> list.map(as_string)
         |> result.all(),
       )
+      let kind =
+        tom.get_string(t, ["kind"])
+        |> result.map(string.lowercase)
+        |> result.unwrap("module")
 
       use action_kind <- try(case kind {
         "module" -> Ok(Module)
         "sub_command" -> Ok(SubCommand)
         "binary" -> Ok(Binary)
         _ ->
-          Error(InvalidFieldCustomErr(
-            "kind",
-            "got: "
+          Error(InvalidFieldErr(
+            Some("kind"),
+            Right(
+              "got: "
               <> util.quote(kind)
               <> " expected: one of ['sub_command', 'binary', or 'module']",
+            ),
           ))
       })
 
       Ok(Action(command: command, kind: action_kind, args: args))
     }
     _ ->
-      Error(InvalidFieldCustomErr(
-        actions,
-        "'actions' element was not an InlineTable",
+      Error(InvalidFieldErr(
+        Some(actions),
+        Right("'actions' element was not an InlineTable"),
       ))
   }
 }
@@ -102,6 +104,9 @@ pub fn as_string(t: Toml) -> Result(String, CactusErr) {
   case t {
     tom.String(v) -> Ok(v)
     _ ->
-      Error(InvalidFieldCustomErr("args", "'args' was not a list of strings"))
+      Error(InvalidFieldErr(
+        Some("args"),
+        Right("'args' was not a list of strings"),
+      ))
   }
 }
