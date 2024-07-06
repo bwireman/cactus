@@ -7,3 +7,4 @@ node_modules/
 .vscode
 key._
 test/testdata/scripts
+.test-run
