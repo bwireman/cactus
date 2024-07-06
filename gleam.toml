@@ -1,5 +1,5 @@
 name = "cactus"
-version = "0.2.0"
+version = "0.2.1"
 licences = ["MIT"]
 repository = { type = "github", user = "bwireman", repo = "cactus" }
 description = "A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and more!"
