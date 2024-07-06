@@ -35,10 +35,7 @@ jobs:
           otp-version: ${{ env.otp }}
           gleam-version: ${{ env.gleam }}
           rebar3-version: ${{ env.rebar }}
-      - run: gleam test --target erlang
-      - run: gleam run --target erlang
-      - run: gleam run --target erlang -- test
-      - run: ./scripts/assert_test.sh
+      - run: ./scripts/target_test.sh erlang
 
   node:
     runs-on: ubuntu-latest
@@ -58,10 +55,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: yarn install
-      - run: gleam test --target javascript --runtime nodejs
-      - run: gleam run --target javascript --runtime nodejs
-      - run: gleam run --target javascript --runtime nodejs -- test
-      - run: ./scripts/assert_test.sh
+      - run: ./scripts/target_test.sh javascript nodejs
 
   bun:
     runs-on: ubuntu-latest
@@ -74,10 +68,7 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - uses: oven-sh/setup-bun@v1
       - run: bun install
-      - run: gleam test --target javascript --runtime bun
-      - run: gleam run --target javascript --runtime bun
-      - run: gleam run --target javascript --runtime bun -- test
-      - run: ./scripts/assert_test.sh
+      - run: ./scripts/target_test.sh javascript bun
 
   deno:
     runs-on: ubuntu-latest
@@ -91,7 +82,4 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x # Run with latest stable Deno.
-      - run: gleam test --target javascript --runtime deno
-      - run: gleam run --target javascript --runtime deno
-      - run: gleam run --target javascript --runtime deno -- test
-      - run: ./scripts/assert_test.sh
+      - run: ./scripts/target_test.sh javascript deno
