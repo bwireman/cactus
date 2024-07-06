@@ -2,6 +2,9 @@
 [cactus.actions-wrong-type]
 actions = true
 
+[cactus.actions-element-wrong-type]
+actions = [1]
+
 [cactus.no-command]
 actions = [{}]
 

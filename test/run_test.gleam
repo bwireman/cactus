@@ -2,17 +2,20 @@ import cactus/run
 import gleam/list
 import gleeunit/should
 
+fn parse(file: String, action: String) {
+  run.get_actions(file, action)
+  |> should.be_ok
+  |> list.map(run.parse_action)
+}
+
 pub fn parse_action_test() {
   // not present
   run.get_actions("test/testdata/gleam/basic.toml", "pre-commit")
-  |> should.be_error
+  |> should.be_error()
 
   let assert [a, b, c] =
-    run.get_actions("test/testdata/gleam/basic.toml", "pre-push")
-    |> should.be_ok
-    |> list.map(run.parse_action)
+    parse("test/testdata/gleam/basic.toml", "pre-push")
     |> list.map(should.be_ok)
-
   should.equal(a.command, "A")
   should.equal(a.kind, run.SubCommand)
   should.equal(a.args, [])
@@ -32,21 +35,16 @@ pub fn parse_action_test() {
   |> should.be_error
 
   run.get_actions("test/testdata/gleam/invalid.toml", "actions-wrong-type")
-  |> should.be_error
+  |> should.be_error()
 
-  let assert [d] =
-    run.get_actions("test/testdata/gleam/invalid.toml", "no-command")
-    |> should.be_ok
-    |> list.map(run.parse_action)
+  parse("test/testdata/gleam/invalid.toml", "actions-element-wrong-type")
+  |> list.map(should.be_error)
 
-  should.be_error(d)
+  parse("test/testdata/gleam/invalid.toml", "no-command")
+  |> list.map(should.be_error)
 
-  let assert [e] =
-    run.get_actions("test/testdata/gleam/invalid.toml", "kind-wrong-type")
-    |> should.be_ok
-    |> list.map(run.parse_action)
-
-  should.be_error(e)
+  parse("test/testdata/gleam/invalid.toml", "kind-wrong-type")
+  |> list.map(should.be_error)
 
   run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
   |> should.be_ok

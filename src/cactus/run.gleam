@@ -11,8 +11,6 @@ import tom.{type Toml}
 
 const actions = "actions"
 
-const kind = "kind"
-
 const gleam = "gleam"
 
 pub type ActionKind {
@@ -30,7 +28,7 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
     tom.InlineTable(t) -> {
       use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
       let kind =
-        tom.get_string(t, [kind])
+        tom.get_string(t, ["kind"])
         |> result.map(string.lowercase)
         |> result.unwrap("module")
 
@@ -42,22 +40,25 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
       )
 
       use action_kind <- try(case kind {
+        "module" -> Ok(Module)
         "sub_command" -> Ok(SubCommand)
         "binary" -> Ok(Binary)
-        "module" -> Ok(Module)
         _ ->
           Error(InvalidFieldCustomErr(
-            kind,
+            "kind",
             "got: "
               <> util.quote(kind)
-              <> "expected: one of 'sub_command', 'binary', 'module'",
+              <> " expected: one of ['sub_command', 'binary', or 'module']",
           ))
       })
 
       Ok(Action(command: command, kind: action_kind, args: args))
     }
     _ ->
-      Error(InvalidFieldCustomErr(actions, "'actions' was not an InlineTable"))
+      Error(InvalidFieldCustomErr(
+        actions,
+        "'actions' element was not an InlineTable",
+      ))
   }
 }
 
