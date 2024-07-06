@@ -6,7 +6,6 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 gleam check
-gleam update
 gleam build
 gleam format
 

@@ -6,7 +6,7 @@ import tom.{type GetError, type Toml, NotFound, WrongType}
 
 pub type CactusErr {
   InvalidFieldErr(err: GetError)
-  InvalidFieldCustomErr(field: String)
+  InvalidFieldCustomErr(field: String, err: String)
   InvalidTomlErr
   ActionFailedErr(output: String)
   FSErr(path: String, err: FileError)
@@ -46,7 +46,8 @@ pub fn str(err: CactusErr) -> String {
       <> quote(expected)
       <> " got "
       <> quote(got)
-    InvalidFieldCustomErr(field) -> "Invalid field in config: " <> field
+    InvalidFieldCustomErr(field, err) ->
+      "Invalid field in config: " <> field <> " " <> err
     InvalidTomlErr -> "Invalid Toml Error"
     ActionFailedErr(output) -> "Action Failed Error:\n" <> output
     FSErr(path, err) ->

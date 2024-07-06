@@ -11,6 +11,8 @@ import tom.{type Toml}
 
 const actions = "actions"
 
+const kind = "kind"
+
 const gleam = "gleam"
 
 pub type ActionKind {
@@ -28,7 +30,7 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
     tom.InlineTable(t) -> {
       use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
       let kind =
-        tom.get_string(t, ["kind"])
+        tom.get_string(t, [kind])
         |> result.map(string.lowercase)
         |> result.unwrap("module")
 
@@ -39,15 +41,23 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
         |> result.all(),
       )
 
-      let action_kind = case kind {
-        "sub_command" -> SubCommand
-        "binary" -> Binary
-        _ -> Module
-      }
+      use action_kind <- try(case kind {
+        "sub_command" -> Ok(SubCommand)
+        "binary" -> Ok(Binary)
+        "module" -> Ok(Module)
+        _ ->
+          Error(InvalidFieldCustomErr(
+            kind,
+            "got: "
+              <> util.quote(kind)
+              <> "expected: one of 'sub_command', 'binary', 'module'",
+          ))
+      })
 
       Ok(Action(command: command, kind: action_kind, args: args))
     }
-    _ -> Error(InvalidFieldCustomErr(actions))
+    _ ->
+      Error(InvalidFieldCustomErr(actions, "'actions' was not an InlineTable"))
   }
 }
 
@@ -90,8 +100,7 @@ pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
 pub fn as_string(t: Toml) -> Result(String, CactusErr) {
   case t {
     tom.String(v) -> Ok(v)
-    _ -> {
-      Error(InvalidFieldCustomErr("args"))
-    }
+    _ ->
+      Error(InvalidFieldCustomErr("args", "'args' was not a list of strings"))
   }
 }

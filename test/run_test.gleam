@@ -41,6 +41,13 @@ pub fn parse_action_test() {
 
   should.be_error(d)
 
+  let assert [e] =
+    run.get_actions("test/testdata/gleam/invalid.toml", "kind-wrong-type")
+    |> should.be_ok
+    |> list.map(run.parse_action)
+
+  should.be_error(e)
+
   run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
   |> should.be_ok
   |> should.equal([])
