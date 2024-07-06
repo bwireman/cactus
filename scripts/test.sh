@@ -18,17 +18,12 @@ function assert_hooks() {
     test -f ".git/hooks/test" || (echo "test: not found" && exit 1)
 }
 
-function assert_test() {
-    test -f ".test-run" || (echo ".test-run: not found" && exit 1)
-    rm -rf .test-run
-}
-
 echo -e "${GREEN}==> erlang${NC}"
 gleam test --target erlang
 gleam run --target erlang
 assert_hooks
 gleam run --target erlang -- test
-assert_test
+./scripts/assert_test.sh
 rm -rf ".git/hooks/"
 
 echo -e "${GREEN}==> nodejs${NC}"
@@ -36,7 +31,7 @@ gleam test --target javascript --runtime nodejs
 gleam run --target javascript --runtime nodejs
 assert_hooks
 gleam run --target javascript --runtime nodejs -- test
-assert_test
+./scripts/assert_test.sh
 rm -rf ".git/hooks/"
 
 echo -e "${GREEN}==> deno${NC}"
@@ -44,7 +39,7 @@ gleam test --target javascript --runtime deno
 gleam run --target javascript --runtime deno
 assert_hooks
 gleam run --target javascript --runtime deno -- test
-assert_test
+./scripts/assert_test.sh
 rm -rf ".git/hooks/"
 
 echo -e "${GREEN}==> bun${NC}"
@@ -52,6 +47,6 @@ gleam test --target javascript --runtime bun
 gleam run --target javascript --runtime bun
 assert_hooks
 gleam run --target javascript --runtime bun -- test
-assert_test
+./scripts/assert_test.sh
 
 gleam run
