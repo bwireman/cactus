@@ -1,8 +1,10 @@
 import gleam/dict.{type Dict}
+import gleam/io
 import gleam/option.{type Option, None, Some}
 import gleam/result.{replace_error}
 import gleam/string
 import gleither.{type Either, Left, Right}
+import shellout
 import simplifile.{type FileError, describe_error}
 import tom.{type GetError, type Toml, NotFound, WrongType}
 
@@ -82,4 +84,14 @@ pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
 
 pub fn join_text(text: List(String)) -> String {
   string.join(text, " ")
+}
+
+pub fn print_progress(msg: String) {
+  shellout.style(msg, with: shellout.color(["brightmagenta"]), custom: [])
+  |> io.println
+}
+
+pub fn print_warning(msg: String) {
+  shellout.style(msg <> "\n", with: shellout.color(["red"]), custom: [])
+  |> io.println
 }

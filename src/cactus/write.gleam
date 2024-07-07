@@ -1,10 +1,9 @@
 import cactus/util.{
   type CactusErr, as_fs_err, as_invalid_field_err, cactus, parse_gleam_toml,
-  quote,
+  print_progress, quote,
 }
 import filepath
 import gleam/dict
-import gleam/io
 import gleam/list
 import gleam/result.{try}
 import gleam/set
@@ -27,7 +26,7 @@ pub fn create_script(
   hooks_dir: String,
   command: String,
 ) -> Result(String, CactusErr) {
-  io.println("Initializing hook: " <> quote(command))
+  print_progress("Initializing hook: " <> quote(command))
   let path = filepath.join(hooks_dir, command)
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])

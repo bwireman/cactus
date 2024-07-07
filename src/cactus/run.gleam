@@ -1,6 +1,6 @@
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
-  join_text, parse_gleam_toml, quote,
+  join_text, parse_gleam_toml, print_progress, quote,
 }
 import gleam/dict.{type Dict}
 import gleam/io
@@ -60,7 +60,9 @@ fn do_run(action: Action) {
     Binary -> #(action.command, action.args)
   }
 
-  io.println(join_text(["Running", bin, ..args]))
+  ["Running", bin, ..args]
+  |> join_text()
+  |> print_progress()
   case shellout.command(run: bin, with: args, in: ".", opt: []) {
     Ok(res) -> {
       io.print(res)
