@@ -1,6 +1,7 @@
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
 }
+import gleam/dict.{type Dict}
 import gleam/io
 import gleam/list
 import gleam/option.{Some}
@@ -24,38 +25,45 @@ pub type Action {
   Action(command: String, kind: ActionKind, args: List(String))
 }
 
+fn do_parse_kind(kind: String) -> Result(ActionKind, CactusErr) {
+  case kind {
+    "module" -> Ok(Module)
+    "sub_command" -> Ok(SubCommand)
+    "binary" -> Ok(Binary)
+    _ ->
+      Error(InvalidFieldErr(
+        Some("kind"),
+        Right(
+          "got: "
+          <> util.quote(kind)
+          <> " expected: one of ['sub_command', 'binary', or 'module']",
+        ),
+      ))
+  }
+}
+
+fn do_parse_action(t: Dict(String, Toml)) -> Result(Action, CactusErr) {
+  let kind =
+    tom.get_string(t, ["kind"])
+    |> result.map(string.lowercase)
+    |> result.unwrap("module")
+
+  use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
+  use args <- try(
+    tom.get_array(t, ["args"])
+    |> result.unwrap([])
+    |> list.map(as_string)
+    |> result.all(),
+  )
+  use action_kind <- result.map(do_parse_kind(kind))
+
+  Action(command: command, kind: action_kind, args: args)
+}
+
 pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
   case raw {
-    tom.InlineTable(t) -> {
-      use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
-      use args <- try(
-        tom.get_array(t, ["args"])
-        |> result.unwrap([])
-        |> list.map(as_string)
-        |> result.all(),
-      )
-      let kind =
-        tom.get_string(t, ["kind"])
-        |> result.map(string.lowercase)
-        |> result.unwrap("module")
+    tom.InlineTable(t) -> do_parse_action(t)
 
-      use action_kind <- try(case kind {
-        "module" -> Ok(Module)
-        "sub_command" -> Ok(SubCommand)
-        "binary" -> Ok(Binary)
-        _ ->
-          Error(InvalidFieldErr(
-            Some("kind"),
-            Right(
-              "got: "
-              <> util.quote(kind)
-              <> " expected: one of ['sub_command', 'binary', or 'module']",
-            ),
-          ))
-      })
-
-      Ok(Action(command: command, kind: action_kind, args: args))
-    }
     _ ->
       Error(InvalidFieldErr(
         Some(actions),
@@ -75,28 +83,28 @@ pub fn get_actions(
   as_invalid_field_err(tom.get_array(action_body, [actions]))
 }
 
+fn do_run(action: Action) {
+  let #(bin, args) = case action.kind {
+    Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
+    SubCommand -> #(gleam, [action.command, ..action.args])
+    Binary -> #(action.command, action.args)
+  }
+
+  io.println(string.join(["Running", bin, ..args], " "))
+  case shellout.command(run: bin, with: args, in: ".", opt: []) {
+    Ok(res) -> {
+      io.print(res)
+      Ok(res)
+    }
+    Error(#(_, err)) -> Error(ActionFailedErr(err))
+  }
+}
+
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   use actions <- try(get_actions(path, action))
   actions
   |> list.map(parse_action)
-  |> list.map(fn(parse_result) {
-    result.try(parse_result, fn(action) {
-      let #(bin, args) = case action.kind {
-        Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
-        SubCommand -> #(gleam, [action.command, ..action.args])
-        Binary -> #(action.command, action.args)
-      }
-
-      io.println(string.join(["Running", bin, ..args], " "))
-      case shellout.command(run: bin, with: args, in: ".", opt: []) {
-        Ok(res) -> {
-          io.print(res)
-          Ok(res)
-        }
-        Error(#(_, err)) -> Error(ActionFailedErr(err))
-      }
-    })
-  })
+  |> list.map(result.try(_, do_run))
   |> result.all
 }
 

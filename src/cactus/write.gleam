@@ -8,11 +8,7 @@ import gleam/set
 import simplifile
 import tom
 
-@target(erlang)
-pub const tmpl = "gleam run -m cactus --target erlang -- "
-
-@target(javascript)
-pub const tmpl = "gleam run -m cactus --target javascript -- "
+pub const tmpl = "gleam run -m cactus -- "
 
 const valid_hooks = [
   "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-update",
