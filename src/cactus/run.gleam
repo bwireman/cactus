@@ -60,7 +60,7 @@ fn do_run(action: Action) {
     Binary -> #(action.command, action.args)
   }
 
-  ["Running", bin, ..args]
+  ["Running", quote(join_text([bin, ..args]))]
   |> join_text()
   |> print_progress()
   case shellout.command(run: bin, with: args, in: ".", opt: []) {
