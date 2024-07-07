@@ -38,21 +38,23 @@ pub fn as_fs_err(
   }
 }
 
-pub fn str(err: CactusErr) -> String {
+pub fn err_as_str(err: CactusErr) -> String {
   case err {
     InvalidFieldErr(_, Left(NotFound(keys))) ->
       "Missing field in config: " <> quote(string.join(keys, "."))
 
     InvalidFieldErr(_, Left(WrongType(keys, expected, got))) ->
-      "Invalid field in config: "
-      <> quote(string.join(keys, "."))
-      <> " expected: "
-      <> quote(expected)
-      <> " got "
-      <> quote(got)
+      join_text([
+        "Invalid field in config:",
+        quote(string.join(keys, ".")),
+        "expected:",
+        quote(expected),
+        "got:",
+        quote(got),
+      ])
 
     InvalidFieldErr(Some(field), Right(err)) ->
-      "Invalid field in config: " <> field <> " " <> err
+      join_text(["Invalid field in config:", field, err])
 
     InvalidFieldErr(None, Right(err)) -> "Invalid field in config: " <> err
 
@@ -61,7 +63,7 @@ pub fn str(err: CactusErr) -> String {
     ActionFailedErr(output) -> "Action Failed Error:\n" <> output
 
     FSErr(path, err) ->
-      "FS Error at " <> path <> " with " <> describe_error(err)
+      join_text(["FS Error at", path, "with", describe_error(err)])
 
     CLIErr(arg) -> "CLI Error: invalid arg " <> quote(arg)
 
@@ -76,4 +78,8 @@ pub fn quote(str: String) -> String {
 pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
   use body <- result.try(as_fs_err(simplifile.read(path), path))
   tom.parse(body) |> as_err(InvalidTomlErr)
+}
+
+pub fn join_text(text: List(String)) -> String {
+  string.join(text, " ")
 }

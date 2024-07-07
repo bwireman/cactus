@@ -1,4 +1,7 @@
-import cactus/util.{type CactusErr, as_fs_err, as_invalid_field_err, cactus}
+import cactus/util.{
+  type CactusErr, as_fs_err, as_invalid_field_err, cactus, parse_gleam_toml,
+  quote,
+}
 import filepath
 import gleam/dict
 import gleam/io
@@ -8,13 +11,13 @@ import gleam/set
 import simplifile
 import tom
 
-pub const tmpl = "gleam run -m cactus -- "
-
 const valid_hooks = [
   "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-update",
   "pre-applypatch", "pre-commit", "pre-merge-commit", "prepare-commit-msg",
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update", "test",
 ]
+
+pub const tmpl = "gleam run -m cactus -- "
 
 pub fn is_valid_hook_name(name: String) -> Bool {
   list.contains(valid_hooks, name)
@@ -24,7 +27,7 @@ pub fn create_script(
   hooks_dir: String,
   command: String,
 ) -> Result(String, CactusErr) {
-  io.println("Initializing hook: " <> util.quote(command))
+  io.println("Initializing hook: " <> quote(command))
   let path = filepath.join(hooks_dir, command)
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
@@ -43,7 +46,7 @@ pub fn create_script(
 
 pub fn init(hooks_dir: String, path: String) -> Result(List(String), CactusErr) {
   {
-    use manifest <- try(util.parse_gleam_toml(path))
+    use manifest <- try(parse_gleam_toml(path))
     use action_body <- result.map(
       as_invalid_field_err(tom.get_table(manifest, [cactus])),
     )

@@ -1,5 +1,7 @@
 import cactus/run
-import cactus/util.{type CactusErr, CLIErr, as_fs_err, str}
+import cactus/util.{
+  type CactusErr, CLIErr, as_fs_err, err_as_str, join_text, quote,
+}
 import cactus/write
 import filepath
 import gleam/io
@@ -46,10 +48,14 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   case res {
     Ok(_) -> Nil
+    Error(CLIErr(err)) -> {
+      io.println_error(err_as_str(CLIErr(err)))
+      shellout.exit(1)
+    }
     Error(reason) -> {
-      io.println_error(
-        util.quote(cmd) <> " hook failed. Reason: " <> str(reason),
-      )
+      [quote(cmd), "hook failed. Reason:", err_as_str(reason)]
+      |> join_text()
+      |> io.println_error()
       shellout.exit(1)
     }
   }

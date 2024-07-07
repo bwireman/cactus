@@ -1,5 +1,6 @@
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
+  join_text, parse_gleam_toml, quote,
 }
 import gleam/dict.{type Dict}
 import gleam/io
@@ -15,16 +16,6 @@ const actions = "actions"
 
 const gleam = "gleam"
 
-pub type ActionKind {
-  Module
-  SubCommand
-  Binary
-}
-
-pub type Action {
-  Action(command: String, kind: ActionKind, args: List(String))
-}
-
 fn do_parse_kind(kind: String) -> Result(ActionKind, CactusErr) {
   case kind {
     "module" -> Ok(Module)
@@ -34,9 +25,11 @@ fn do_parse_kind(kind: String) -> Result(ActionKind, CactusErr) {
       Error(InvalidFieldErr(
         Some("kind"),
         Right(
-          "got: "
-          <> util.quote(kind)
-          <> " expected: one of ['sub_command', 'binary', or 'module']",
+          join_text([
+            "got:",
+            quote(kind),
+            "expected: one of ['sub_command', 'binary', or 'module']",
+          ]),
         ),
       ))
   }
@@ -60,6 +53,44 @@ fn do_parse_action(t: Dict(String, Toml)) -> Result(Action, CactusErr) {
   Action(command: command, kind: action_kind, args: args)
 }
 
+fn do_run(action: Action) {
+  let #(bin, args) = case action.kind {
+    Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
+    SubCommand -> #(gleam, [action.command, ..action.args])
+    Binary -> #(action.command, action.args)
+  }
+
+  io.println(join_text(["Running", bin, ..args]))
+  case shellout.command(run: bin, with: args, in: ".", opt: []) {
+    Ok(res) -> {
+      io.print(res)
+      Ok(res)
+    }
+    Error(#(_, err)) -> Error(ActionFailedErr(err))
+  }
+}
+
+fn as_string(t: Toml) -> Result(String, CactusErr) {
+  case t {
+    tom.String(v) -> Ok(v)
+    _ ->
+      Error(InvalidFieldErr(
+        Some("args"),
+        Right("'args' was not a list of strings"),
+      ))
+  }
+}
+
+pub type ActionKind {
+  Module
+  SubCommand
+  Binary
+}
+
+pub type Action {
+  Action(command: String, kind: ActionKind, args: List(String))
+}
+
 pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
   case raw {
     tom.InlineTable(t) -> do_parse_action(t)
@@ -76,28 +107,11 @@ pub fn get_actions(
   path: String,
   action: String,
 ) -> Result(List(Toml), CactusErr) {
-  use manifest <- try(util.parse_gleam_toml(path))
+  use manifest <- try(parse_gleam_toml(path))
   use action_body <- try(
     as_invalid_field_err(tom.get_table(manifest, [cactus, action])),
   )
   as_invalid_field_err(tom.get_array(action_body, [actions]))
-}
-
-fn do_run(action: Action) {
-  let #(bin, args) = case action.kind {
-    Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
-    SubCommand -> #(gleam, [action.command, ..action.args])
-    Binary -> #(action.command, action.args)
-  }
-
-  io.println(string.join(["Running", bin, ..args], " "))
-  case shellout.command(run: bin, with: args, in: ".", opt: []) {
-    Ok(res) -> {
-      io.print(res)
-      Ok(res)
-    }
-    Error(#(_, err)) -> Error(ActionFailedErr(err))
-  }
 }
 
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
@@ -106,15 +120,4 @@ pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   |> list.map(parse_action)
   |> list.map(result.try(_, do_run))
   |> result.all
-}
-
-pub fn as_string(t: Toml) -> Result(String, CactusErr) {
-  case t {
-    tom.String(v) -> Ok(v)
-    _ ->
-      Error(InvalidFieldErr(
-        Some("args"),
-        Right("'args' was not a list of strings"),
-      ))
-  }
 }
