@@ -29,29 +29,17 @@ gleam run -m cactus
 
 ### ⚙️ Config
 
-Optional settings that can be added to your project's `gleam.toml`
+Settings that can be added to your project's `gleam.toml`
 
 ```toml
+# hook name (all git hooks are supported)
 [cactus.pre-commit]
 # list of actions for the hook
 actions = [
-    {
-      # name of the command or binary to be run
-      # required
-      command = "format",
-      # is it a gleam subcommand, a binary or a module
-      # ["sub_command", "binary", "module"]
-      # default: module
-      kind = "sub_command",
-      # additional args to be passed to the command
-      # default: []
-      args = ["--check"]
-    },
-]
-
-[cactus.pre-push]
-actions = [
-    { command = "test", kind = "sub_command" },
-    { command = "go_over", kind = "module", args=["--outdated"] },
+    # command: name of the command or binary to be run: required
+    # kind: is it a gleam subcommand, a binary or a module: ["sub_command", "binary", "module"], default: module
+    # args: additional args to be passed to the command, default: []
+    { command = "format", kind = "sub_command", args = ["--check"] },
+    { command = "./scripts/test.sh", kind = "binary" },
 ]
 ```
