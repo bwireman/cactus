@@ -33,16 +33,33 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   let cmd = get_cmd()
   let res = case cmd {
-    "" | "init" -> {
-      write.init(hooks_dir, gleam_toml)
+    "help" | "--help" | "-h" -> {
+      util.print_info(
+        "
+🌵 Cactus (version: 0.2.1)
+---------------------------------------
+A tool for managing git lifecycle hooks
+with ✨ gleam! Pre commit, Pre push
+and more!
+
+Usage:
+
+1. Configure your desired hooks in your project's `gleam.toml`
+  - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#%EF%B8%8F-config
+2. Run `gleam run -m cactus`
+3. Celebrate! 🎉
+",
+      )
+      Ok([])
     }
 
-    arg -> {
+    "" | "init" -> write.init(hooks_dir, gleam_toml)
+
+    arg ->
       case write.is_valid_hook_name(arg) {
         True -> run.run(gleam_toml, arg)
         False -> Error(CLIErr(arg))
       }
-    }
   }
 
   case res {

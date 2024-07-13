@@ -95,3 +95,8 @@ pub fn print_warning(msg: String) {
   shellout.style(msg <> "\n", with: shellout.color(["red"]), custom: [])
   |> io.println
 }
+
+pub fn print_info(msg: String) {
+  shellout.style(msg <> "\n", with: shellout.color(["yellow"]), custom: [])
+  |> io.println
+}
