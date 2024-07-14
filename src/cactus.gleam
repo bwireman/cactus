@@ -1,6 +1,7 @@
 import cactus/run
 import cactus/util.{
-  type CactusErr, CLIErr, as_fs_err, err_as_str, join_text, print_warning, quote,
+  type CactusErr, CLIErr, as_fs_err, err_as_str, join_text, print_info,
+  print_warning, quote,
 }
 import cactus/write
 import filepath
@@ -34,9 +35,9 @@ pub fn main() -> Result(Nil, CactusErr) {
   let cmd = get_cmd()
   let res = case cmd {
     "help" | "--help" | "-h" -> {
-      util.print_info(
+      Ok(print_info(
         "
-🌵 Cactus (version: 0.2.1)
+🌵 Cactus (version: 1.0.0)
 ---------------------------------------
 A tool for managing git lifecycle hooks
 with ✨ gleam! Pre commit, Pre push
@@ -49,25 +50,30 @@ Usage:
 2. Run `gleam run -m cactus`
 3. Celebrate! 🎉
 ",
-      )
-      Ok([])
+      ))
     }
 
-    "" | "init" -> write.init(hooks_dir, gleam_toml)
+    "" | "init" -> {
+      write.init(hooks_dir, gleam_toml)
+      |> result.replace(Nil)
+    }
 
     arg ->
       case write.is_valid_hook_name(arg) {
         True -> run.run(gleam_toml, arg)
         False -> Error(CLIErr(arg))
       }
+      |> result.replace(Nil)
   }
 
   case res {
     Ok(_) -> Nil
+
     Error(CLIErr(err)) -> {
       print_warning(err_as_str(CLIErr(err)))
       shellout.exit(1)
     }
+
     Error(reason) -> {
       [quote(cmd), "hook failed. Reason:", err_as_str(reason)]
       |> join_text()
