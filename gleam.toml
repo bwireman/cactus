@@ -1,5 +1,5 @@
 name = "cactus"
-version = "1.0.0"
+version = "1.1.0"
 licences = ["MIT"]
 repository = { type = "github", user = "bwireman", repo = "cactus" }
 description = "A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and more!"
@@ -10,7 +10,7 @@ target = "javascript"
 
 [javascript]
 typescript_declarations = false
-runtime = "bun"
+runtime = "nodejs"
 
 [javascript.deno]
 allow_all = true
