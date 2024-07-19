@@ -24,7 +24,8 @@ Bun, Deno & Nodejs are _all_ supported!
 
 ```sh
 # initialize configured hooks
-gleam run -m cactus
+# specify the target depending on how you want the hooks to run
+gleam run --target <javascript|erlang> -m cactus
 ```
 
 ### ⚙️ Config

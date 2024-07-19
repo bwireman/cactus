@@ -16,7 +16,25 @@ const valid_hooks = [
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update", "test",
 ]
 
-pub const tmpl = "gleam run -m cactus -- "
+@target(javascript)
+pub fn tmpl() -> String {
+  let runtime =
+    parse_gleam_toml("./gleam.toml")
+    |> try(fn(gleam_toml) {
+      as_invalid_field_err(tom.get_table(gleam_toml, ["javascript"]))
+    })
+    |> try(fn(gleam_toml) {
+      as_invalid_field_err(tom.get_string(gleam_toml, ["runtime"]))
+    })
+    |> result.unwrap("nodejs")
+
+  "gleam run --target javascript --runtime " <> runtime <> " -m cactus -- "
+}
+
+@target(erlang)
+pub fn tmpl() -> String {
+  "gleam run --target erlang -m cactus -- "
+}
 
 pub fn is_valid_hook_name(name: String) -> Bool {
   list.contains(valid_hooks, name)
@@ -33,7 +51,7 @@ pub fn create_script(
 
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
-  use _ <- try(as_fs_err(simplifile.write(path, tmpl <> command), path))
+  use _ <- try(as_fs_err(simplifile.write(path, tmpl() <> command), path))
 
   simplifile.set_permissions(
     path,

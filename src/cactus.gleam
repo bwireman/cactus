@@ -37,7 +37,7 @@ pub fn main() -> Result(Nil, CactusErr) {
     "help" | "--help" | "-h" -> {
       Ok(print_info(
         "
-🌵 Cactus (version: 1.0.0)
+🌵 Cactus (version: 1.1.0)
 ---------------------------------------
 A tool for managing git lifecycle hooks
 with ✨ gleam! Pre commit, Pre push
@@ -47,7 +47,7 @@ Usage:
 
 1. Configure your desired hooks in your project's `gleam.toml`
   - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#%EF%B8%8F-config
-2. Run `gleam run -m cactus`
+2. Run `gleam run --target <erlang|javascript> -m cactus`
 3. Celebrate! 🎉
 ",
       ))

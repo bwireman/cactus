@@ -25,5 +25,5 @@ pub fn create_script_test() {
 
   simplifile.read("test/testdata/scripts/test")
   |> should.be_ok
-  |> should.equal(write.tmpl <> "test")
+  |> should.equal(write.tmpl() <> "test")
 }
