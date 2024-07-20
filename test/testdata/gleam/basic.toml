@@ -4,3 +4,6 @@ actions = [
     { command = "B", args = ["--outdated"] },
     { command = "C", kind = "binary" },
 ]
+
+[javascript]
+x = true

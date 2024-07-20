@@ -17,9 +17,9 @@ const valid_hooks = [
 ]
 
 @target(javascript)
-pub fn tmpl() -> String {
+pub fn tmpl(path: String) -> String {
   let runtime =
-    parse_gleam_toml("./gleam.toml")
+    parse_gleam_toml(path)
     |> try(fn(gleam_toml) {
       as_invalid_field_err(tom.get_table(gleam_toml, ["javascript"]))
     })
@@ -32,7 +32,7 @@ pub fn tmpl() -> String {
 }
 
 @target(erlang)
-pub fn tmpl() -> String {
+pub fn tmpl(_: String) -> String {
   "gleam run --target erlang -m cactus -- "
 }
 
@@ -42,6 +42,7 @@ pub fn is_valid_hook_name(name: String) -> Bool {
 
 pub fn create_script(
   hooks_dir: String,
+  gleam_path: String,
   command: String,
 ) -> Result(String, CactusErr) {
   print_progress("Initializing hook: " <> quote(command))
@@ -51,7 +52,10 @@ pub fn create_script(
 
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
-  use _ <- try(as_fs_err(simplifile.write(path, tmpl() <> command), path))
+  use _ <- try(as_fs_err(
+    simplifile.write(path, tmpl(gleam_path) <> command),
+    path,
+  ))
 
   simplifile.set_permissions(
     path,
@@ -71,7 +75,7 @@ pub fn init(hooks_dir: String, path: String) -> Result(List(String), CactusErr) 
     action_body
     |> dict.keys()
     |> list.filter(is_valid_hook_name)
-    |> list.map(create_script(hooks_dir, _))
+    |> list.map(create_script(hooks_dir, path, _))
     |> result.all
   }
   |> result.flatten
