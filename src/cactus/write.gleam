@@ -19,7 +19,8 @@ const valid_hooks = [
 @target(javascript)
 pub fn tmpl(path: String) -> String {
   let runtime =
-    parse_gleam_toml(path)
+    path
+    |> parse_gleam_toml()
     |> try(fn(gleam_toml) {
       as_invalid_field_err(tom.get_table(gleam_toml, ["javascript"]))
     })

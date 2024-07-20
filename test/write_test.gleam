@@ -6,6 +6,12 @@ import simplifile
 
 const hook_dir = "test/testdata/scripts"
 
+const node_files = [
+  "./gleam.toml", "test/testdata/gleam/basic.toml",
+  "test/testdata/gleam/empty.toml", "foo/bar/baz",
+  "test/testdata/gleam/node.toml", "test/testdata/gleam/junk.toml",
+]
+
 pub fn init_test() {
   simplifile.delete_all([hook_dir])
   |> should.be_ok
@@ -30,39 +36,27 @@ pub fn create_script_test() {
 
 @target(javascript)
 pub fn template_test() {
-  write.tmpl("./gleam.toml")
-  |> should.equal(
+  node_files
+  |> list.map(write.tmpl)
+  |> list.each(should.equal(
+    _,
     "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
-
-  write.tmpl("test/testdata/gleam/basic.toml")
-  |> should.equal(
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
-
-  write.tmpl("test/testdata/gleam/empty.toml")
-  |> should.equal(
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
-
-  write.tmpl("foo/bar/baz")
-  |> should.equal(
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
-
-  write.tmpl("test/testdata/gleam/node.toml")
-  |> should.equal(
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
+  ))
 
   write.tmpl("test/testdata/gleam/bun.toml")
   |> should.equal("gleam run --target javascript --runtime bun -m cactus -- ")
 
   write.tmpl("test/testdata/gleam/deno.toml")
   |> should.equal("gleam run --target javascript --runtime deno -m cactus -- ")
+}
 
-  write.tmpl("test/testdata/gleam/junk.toml")
-  |> should.equal(
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
-  )
+@target(erlang)
+pub fn template_test() {
+  [
+    "test/testdata/gleam/bun.toml",
+    "test/testdata/gleam/deno.toml",
+    ..node_files
+  ]
+  |> list.map(write.tmpl)
+  |> list.each(should.equal(_, "gleam run --target erlang -m cactus -- "))
 }
