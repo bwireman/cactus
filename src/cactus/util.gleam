@@ -1,6 +1,5 @@
 import gleam/dict.{type Dict}
 import gleam/io
-import gleam/option.{type Option, None, Some}
 import gleam/result.{replace_error}
 import gleam/string
 import gleither.{type Either, Left, Right}
@@ -11,7 +10,7 @@ import tom.{type GetError, type Toml, NotFound, WrongType}
 pub const cactus = "cactus"
 
 pub type CactusErr {
-  InvalidFieldErr(field: Option(String), err: Either(GetError, String))
+  InvalidFieldErr(field: String, err: Either(GetError, String))
   InvalidTomlErr
   ActionFailedErr(output: String)
   FSErr(path: String, err: FileError)
@@ -26,7 +25,7 @@ pub fn as_err(res: Result(a, b), err: CactusErr) -> Result(a, CactusErr) {
 pub fn as_invalid_field_err(res: Result(a, GetError)) -> Result(a, CactusErr) {
   case res {
     Ok(_) -> as_err(res, NoErr)
-    Error(get_error) -> as_err(res, InvalidFieldErr(None, Left(get_error)))
+    Error(get_error) -> as_err(res, InvalidFieldErr("", Left(get_error)))
   }
 }
 
@@ -55,10 +54,10 @@ pub fn err_as_str(err: CactusErr) -> String {
         quote(got),
       ])
 
-    InvalidFieldErr(Some(field), Right(err)) ->
-      join_text(["Invalid field in config:", field, err])
+    InvalidFieldErr("", Right(err)) -> "Invalid field in config: " <> err
 
-    InvalidFieldErr(None, Right(err)) -> "Invalid field in config: " <> err
+    InvalidFieldErr(field, Right(err)) ->
+      join_text(["Invalid field in config:", field, err])
 
     InvalidTomlErr -> "Invalid Toml Error"
 

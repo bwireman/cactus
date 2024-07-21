@@ -5,7 +5,6 @@ import cactus/util.{
 import gleam/dict.{type Dict}
 import gleam/io
 import gleam/list
-import gleam/option.{Some}
 import gleam/result.{try}
 import gleam/string
 import gleither.{Right}
@@ -23,7 +22,7 @@ fn do_parse_kind(kind: String) -> Result(ActionKind, CactusErr) {
     "binary" -> Ok(Binary)
     _ ->
       Error(InvalidFieldErr(
-        Some("kind"),
+        "kind",
         Right(
           join_text([
             "got:",
@@ -76,10 +75,7 @@ fn as_string(t: Toml) -> Result(String, CactusErr) {
   case t {
     tom.String(v) -> Ok(v)
     _ ->
-      Error(InvalidFieldErr(
-        Some("args"),
-        Right("'args' was not a list of strings"),
-      ))
+      Error(InvalidFieldErr("args", Right("'args' was not a list of strings")))
   }
 }
 
@@ -99,7 +95,7 @@ pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {
 
     _ ->
       Error(InvalidFieldErr(
-        Some(actions),
+        actions,
         Right("'actions' element was not an InlineTable"),
       ))
   }

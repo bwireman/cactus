@@ -17,23 +17,20 @@ const valid_hooks = [
 ]
 
 @target(javascript)
-pub fn tmpl(path: String) -> String {
+pub fn get_hook_template(path: String) -> String {
   let runtime =
     path
     |> parse_gleam_toml()
-    |> try(fn(gleam_toml) {
-      as_invalid_field_err(tom.get_table(gleam_toml, ["javascript"]))
-    })
-    |> try(fn(gleam_toml) {
-      as_invalid_field_err(tom.get_string(gleam_toml, ["runtime"]))
-    })
+    |> result.replace_error(tom.NotFound([]))
+    |> try(tom.get_table(_, ["javascript"]))
+    |> try(tom.get_string(_, ["runtime"]))
     |> result.unwrap("nodejs")
 
   "gleam run --target javascript --runtime " <> runtime <> " -m cactus -- "
 }
 
 @target(erlang)
-pub fn tmpl(_: String) -> String {
+pub fn get_hook_template(_: String) -> String {
   "gleam run --target erlang -m cactus -- "
 }
 
@@ -54,7 +51,7 @@ pub fn create_script(
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
   use _ <- try(as_fs_err(
-    simplifile.write(path, tmpl(gleam_path) <> command),
+    simplifile.write(path, get_hook_template(gleam_path) <> command),
     path,
   ))
 

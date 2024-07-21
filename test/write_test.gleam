@@ -31,32 +31,32 @@ pub fn create_script_test() {
 
   simplifile.read("test/testdata/scripts/test")
   |> should.be_ok
-  |> should.equal(write.tmpl("./gleam.toml") <> "test")
+  |> should.equal(write.get_hook_template("./gleam.toml") <> "test")
 }
 
 @target(javascript)
-pub fn template_test() {
+pub fn get_hook_template_test() {
   node_files
-  |> list.map(write.tmpl)
+  |> list.map(write.get_hook_template)
   |> list.each(should.equal(
     _,
     "gleam run --target javascript --runtime nodejs -m cactus -- ",
   ))
 
-  write.tmpl("test/testdata/gleam/bun.toml")
+  write.get_hook_template("test/testdata/gleam/bun.toml")
   |> should.equal("gleam run --target javascript --runtime bun -m cactus -- ")
 
-  write.tmpl("test/testdata/gleam/deno.toml")
+  write.get_hook_template("test/testdata/gleam/deno.toml")
   |> should.equal("gleam run --target javascript --runtime deno -m cactus -- ")
 }
 
 @target(erlang)
-pub fn template_test() {
+pub fn get_hook_template_test() {
   [
     "test/testdata/gleam/bun.toml",
     "test/testdata/gleam/deno.toml",
     ..node_files
   ]
-  |> list.map(write.tmpl)
+  |> list.map(write.get_hook_template)
   |> list.each(should.equal(_, "gleam run --target erlang -m cactus -- "))
 }

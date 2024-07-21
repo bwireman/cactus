@@ -24,6 +24,20 @@ fn get_cmd() -> String {
   |> result.unwrap("")
 }
 
+const help = "
+🌵 Cactus (version: 1.1.0)
+---------------------------------------
+A tool for managing git lifecycle hooks
+with ✨ gleam! Pre commit, Pre push
+and more!
+
+Usage:
+1. Configure your desired hooks in your project's `gleam.toml`
+  - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#%EF%B8%8F-config
+2. Run `gleam run --target <erlang|javascript> -m cactus`
+3. Celebrate! 🎉
+"
+
 pub fn main() -> Result(Nil, CactusErr) {
   use pwd <- result.map(as_fs_err(simplifile.current_directory(), "."))
   let gleam_toml = filepath.join(pwd, "gleam.toml")
@@ -34,29 +48,11 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   let cmd = get_cmd()
   let res = case cmd {
-    "help" | "--help" | "-h" -> {
-      Ok(print_info(
-        "
-🌵 Cactus (version: 1.1.0)
----------------------------------------
-A tool for managing git lifecycle hooks
-with ✨ gleam! Pre commit, Pre push
-and more!
+    "help" | "--help" | "-h" -> Ok(print_info(help))
 
-Usage:
-
-1. Configure your desired hooks in your project's `gleam.toml`
-  - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#%EF%B8%8F-config
-2. Run `gleam run --target <erlang|javascript> -m cactus`
-3. Celebrate! 🎉
-",
-      ))
-    }
-
-    "" | "init" -> {
+    "" | "init" ->
       write.init(hooks_dir, gleam_toml)
       |> result.replace(Nil)
-    }
 
     arg ->
       case write.is_valid_hook_name(arg) {

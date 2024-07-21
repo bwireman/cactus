@@ -32,7 +32,7 @@ actions = [
 ]
 
 [cactus.test]
-actions = [{command = "touch", kind = "binary", args = [".test-run"]}]
+actions = [{ command = "touch", kind = "binary", args = [".test-run"] }]
 
 [dependencies]
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
