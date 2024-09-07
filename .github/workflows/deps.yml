@@ -1,4 +1,4 @@
-name: CI
+name: Dependency Check
 
 on:
   schedule:
@@ -10,7 +10,7 @@ env:
   rebar: "3"
 
 jobs:
-  build:
+  check-deps:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
