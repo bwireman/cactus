@@ -21,4 +21,7 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - run: gleam build
       - run: gleam run -m go_over -- --outdated
-
+      - uses: jayqi/failed-build-issue-action@v1
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
