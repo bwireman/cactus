@@ -81,5 +81,5 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.x # Run with latest stable Deno.
+          deno-version: v2.x # Run with latest stable Deno.
       - run: ./scripts/target_test.sh javascript deno

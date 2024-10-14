@@ -3,6 +3,10 @@ name: Dependency Check
 on:
   schedule:
   - cron: "0 9 * * *"
+  push:
+    branches:
+      - main
+  pull_request:
 
 env:
   otp: "27.0"
