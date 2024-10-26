@@ -23,6 +23,7 @@ fi
 
 function clean() {
     rm -rf .test-run
+    rm -rf .another.test-run
     rm -rf ".git/hooks/test"
 }
 
@@ -36,5 +37,6 @@ test -f ".git/hooks/test" || (echo "test: not found" && exit 1)
 # shellcheck disable=SC2086
 gleam run $CMD -- test
 
+test -f ".another.test-run" || (echo ".another.test-run: not found" && exit 1)
 test -f ".test-run" || (echo ".test-run: not found" && exit 1)
 clean

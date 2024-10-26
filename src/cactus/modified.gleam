@@ -5,15 +5,34 @@ import gleam/string
 import shellout
 
 pub fn get_modified_files() -> Result(List(String), util.CactusErr) {
-  shellout.command(
-    run: "git",
-    with: ["diff", "--name-only", "HEAD"],
-    in: ".",
-    opt: [],
-  )
-  |> result.map(string.split(_, "\n"))
-  |> result.map(util.drop_empty)
-  |> util.as_git_error()
+  let untracked =
+    shellout.command(
+      run: "git",
+      with: ["ls-files", "--exclude-standard", "--others"],
+      in: ".",
+      opt: [],
+    )
+    |> result.map(string.split(_, "\n"))
+    |> result.map(util.drop_empty)
+    |> util.as_git_error()
+
+  let modified =
+    shellout.command(
+      run: "git",
+      with: ["diff", "--name-only", "HEAD"],
+      in: ".",
+      opt: [],
+    )
+    |> result.map(string.split(_, "\n"))
+    |> result.map(util.drop_empty)
+    |> util.as_git_error()
+
+  case untracked, modified {
+    Error(_), _ -> untracked
+    _, Error(_) -> modified
+
+    Ok(untracked), Ok(modified) -> Ok(list.append(untracked, modified))
+  }
 }
 
 pub fn modfied_files_match(modfied_files: List(String), watched: List(String)) {
