@@ -25,7 +25,7 @@ fn get_cmd() -> String {
 }
 
 const help = "
-🌵 Cactus (version: 1.1.0)
+🌵 Cactus (version: 1.2.0)
 ---------------------------------------
 A tool for managing git lifecycle hooks
 with ✨ gleam! Pre commit, Pre push

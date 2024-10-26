@@ -46,7 +46,13 @@ actions = [
     # args: additional args to be passed to the command, default: []
     # files: file paths & endings that you want to trigger the action
     # default: [] (meaning always trigger)
-    { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam", "src/example/foo.gleam"] },
+
+    # check formatting
+    { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam", "src/f/oo.gleam"] },
+    # run tests
     { command = "./scripts/test.sh", kind = "binary" },
+    # check dependencies 🕵️‍♂️
+    # self plug of https://github.com/bwireman/go-over
+    { command = "go_over", kind = "module", args=["--outdated"] }
 ]
 ```
