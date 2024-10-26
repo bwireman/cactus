@@ -81,6 +81,16 @@ pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
   tom.parse(body) |> as_err(InvalidTomlErr)
 }
 
+pub fn parse_always_init(path: String) {
+  parse_gleam_toml(path)
+  |> result.try(fn(t) {
+    t
+    |> tom.get_bool(["cactus", "always_init"])
+    |> as_invalid_field_err
+  })
+  |> result.unwrap(False)
+}
+
 pub fn join_text(text: List(String)) -> String {
   string.join(text, " ")
 }

@@ -15,6 +15,9 @@ runtime = "nodejs"
 [javascript.deno]
 allow_all = true
 
+[cactus]
+always_init = true
+
 [cactus.pre-commit]
 actions = [
     { command = "format", kind = "sub_command", args = [

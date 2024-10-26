@@ -33,6 +33,10 @@ gleam run --target <javascript|erlang> -m cactus
 Settings that can be added to your project's `gleam.toml`
 
 ```toml
+[cactus]
+# init hooks on every run (default: false)
+always_init = false
+
 # hook name (all git hooks are supported)
 [cactus.pre-commit]
 # list of actions for the hook

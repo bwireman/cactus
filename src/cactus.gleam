@@ -54,12 +54,18 @@ pub fn main() -> Result(Nil, CactusErr) {
       write.init(hooks_dir, gleam_toml)
       |> result.replace(Nil)
 
-    arg ->
+    arg -> {
+      let _ = case util.parse_always_init(gleam_toml) {
+        True -> write.init(hooks_dir, gleam_toml)
+        _ -> Ok([])
+      }
+
       case write.is_valid_hook_name(arg) {
         True -> run.run(gleam_toml, arg)
         False -> Error(CLIErr(arg))
       }
       |> result.replace(Nil)
+    }
   }
 
   case res {
