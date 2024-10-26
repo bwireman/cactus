@@ -1,3 +1,5 @@
+[cactus]
+
 [cactus.pre-push]
 actions = [
     { command = "A", kind = "sub_command" },

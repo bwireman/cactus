@@ -1,3 +1,4 @@
+import cactus/modified
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
   join_text, parse_gleam_toml, print_progress, quote,
@@ -47,27 +48,41 @@ fn do_parse_action(t: Dict(String, Toml)) -> Result(Action, CactusErr) {
     |> list.map(as_string)
     |> result.all(),
   )
+  use files <- try(
+    tom.get_array(t, ["files"])
+    |> result.unwrap([])
+    |> list.map(as_string)
+    |> result.all(),
+  )
   use action_kind <- result.map(do_parse_kind(kind))
 
-  Action(command: command, kind: action_kind, args: args)
+  Action(command: command, kind: action_kind, args: args, files: files)
 }
 
 fn do_run(action: Action) {
-  let #(bin, args) = case action.kind {
-    Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
-    SubCommand -> #(gleam, [action.command, ..action.args])
-    Binary -> #(action.command, action.args)
-  }
+  use modified_files <- result.try(modified.get_modified_files())
 
-  ["Running", quote(join_text([bin, ..args]))]
-  |> join_text()
-  |> print_progress()
-  case shellout.command(run: bin, with: args, in: ".", opt: []) {
-    Ok(res) -> {
-      io.print(res)
-      Ok(res)
+  case modified.modfied_files_match(modified_files, action.files) {
+    True -> {
+      let #(bin, args) = case action.kind {
+        Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
+        SubCommand -> #(gleam, [action.command, ..action.args])
+        Binary -> #(action.command, action.args)
+      }
+
+      ["Running", quote(join_text([bin, ..args]))]
+      |> join_text()
+      |> print_progress()
+      case shellout.command(run: bin, with: args, in: ".", opt: []) {
+        Ok(res) -> {
+          io.print(res)
+          Ok(res)
+        }
+        Error(#(_, err)) -> Error(ActionFailedErr(err))
+      }
     }
-    Error(#(_, err)) -> Error(ActionFailedErr(err))
+
+    False -> Ok("")
   }
 }
 
@@ -86,7 +101,12 @@ pub type ActionKind {
 }
 
 pub type Action {
-  Action(command: String, kind: ActionKind, args: List(String))
+  Action(
+    command: String,
+    kind: ActionKind,
+    args: List(String),
+    files: List(String),
+  )
 }
 
 pub fn parse_action(raw: Toml) -> Result(Action, CactusErr) {

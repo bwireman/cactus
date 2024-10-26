@@ -22,6 +22,8 @@ always_init = true
 actions = [
     { command = "format", kind = "sub_command", args = [
         "--check",
+    ], files = [
+        ".gleam",
     ] },
     { command = "./scripts/test.sh", kind = "binary" },
 ]

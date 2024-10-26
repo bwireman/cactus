@@ -44,7 +44,9 @@ actions = [
     # command: name of the command or binary to be run: required
     # kind: is it a gleam subcommand, a binary or a module: ["sub_command", "binary", "module"], default: module
     # args: additional args to be passed to the command, default: []
-    { command = "format", kind = "sub_command", args = ["--check"] },
+    # files: file paths & endings that you want to trigger the action
+    # default: [] (meaning always trigger)
+    { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam", "src/example/foo.gleam"] },
     { command = "./scripts/test.sh", kind = "binary" },
 ]
 ```

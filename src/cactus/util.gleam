@@ -1,5 +1,6 @@
 import gleam/dict.{type Dict}
 import gleam/io
+import gleam/list
 import gleam/result.{replace_error}
 import gleam/string
 import gleither.{type Either, Left, Right}
@@ -15,6 +16,7 @@ pub type CactusErr {
   ActionFailedErr(output: String)
   FSErr(path: String, err: FileError)
   CLIErr(arg: String)
+  GitError(err: String)
   NoErr
 }
 
@@ -26,6 +28,13 @@ pub fn as_invalid_field_err(res: Result(a, GetError)) -> Result(a, CactusErr) {
   case res {
     Ok(_) -> as_err(res, NoErr)
     Error(get_error) -> as_err(res, InvalidFieldErr("", Left(get_error)))
+  }
+}
+
+pub fn as_git_error(res: Result(a, #(Int, String))) -> Result(a, CactusErr) {
+  case res {
+    Ok(_) -> as_err(res, NoErr)
+    Error(#(_, output)) -> as_err(res, GitError(output))
   }
 }
 
@@ -68,8 +77,14 @@ pub fn err_as_str(err: CactusErr) -> String {
 
     CLIErr(arg) -> "CLI Error: invalid arg " <> quote(arg)
 
+    GitError(err) -> "Error while running `git`: " <> quote(err)
+
     NoErr -> panic as "how?"
   }
+}
+
+pub fn drop_empty(l: List(String)) -> List(String) {
+  list.filter(l, fn(s) { !string.is_empty(s) })
 }
 
 pub fn quote(str: String) -> String {
