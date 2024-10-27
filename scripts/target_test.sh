@@ -2,6 +2,12 @@
 set -e
 cd "$(dirname "$0")/.."
 
+function clean() {
+    rm -rf .test-run
+    rm -rf .another.test-run
+    rm -rf .git/hooks/test
+}
+
 if [ -z "$1" ]; then
     echo "Must set target"
     echo "Usage: $0 <erlang|javascript>"
@@ -20,12 +26,6 @@ else
     fi
     CMD="--target javascript --runtime $RUNTIME"
 fi
-
-function clean() {
-    rm -rf .test-run
-    rm -rf .another.test-run
-    rm -rf ".git/hooks/test"
-}
 
 clean
 # shellcheck disable=SC2086
