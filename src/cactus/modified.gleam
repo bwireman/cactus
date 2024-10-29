@@ -21,26 +21,21 @@ pub fn get_modified_files() -> Result(List(String), util.CactusErr) {
 }
 
 pub fn modfied_files_match(modfied_files: List(String), watched: List(String)) {
-  let modfied_files = util.drop_empty(modfied_files) |> list.unique()
-  let watched = util.drop_empty(watched) |> list.unique()
+  let modfied_files = util.drop_empty(modfied_files)
+  let watched = util.drop_empty(watched)
 
-  case modfied_files == [] || watched == [] {
-    False -> {
-      let endings = list.filter(watched, string.starts_with(_, "."))
-
-      let cleaned =
-        list.append(
-          watched,
-          list.filter(watched, string.starts_with(_, "./"))
-            |> list.map(string.drop_left(_, 2)),
-        )
-        |> list.unique()
-
-      list.any(cleaned, list.contains(modfied_files, _))
-      || list.any(modfied_files, matches_ending(_, endings))
-    }
-
-    _ -> True
+  list.is_empty(modfied_files)
+  || list.is_empty(watched)
+  || {
+    let endings = list.filter(watched, string.starts_with(_, "."))
+    list.any(modfied_files, matches_ending(_, endings))
+  }
+  || {
+    list.filter(watched, string.starts_with(_, "./"))
+    |> list.map(string.drop_left(_, 2))
+    |> list.append(watched)
+    |> list.unique()
+    |> list.any(list.contains(modfied_files, _))
   }
 }
 

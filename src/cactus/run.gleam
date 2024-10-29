@@ -60,9 +60,18 @@ fn do_parse_action(t: Dict(String, Toml)) -> Result(Action, CactusErr) {
 }
 
 fn do_run(action: Action) {
-  use modified_files <- result.try(modified.get_modified_files())
+  use run_action <- try(case list.is_empty(util.drop_empty(action.files)) {
+    // if file no specific files watched we can just run
+    True -> Ok(True)
 
-  case modified.modfied_files_match(modified_files, action.files) {
+    // only check for modified files if it's relavent to action
+    _ -> {
+      use modfied_files <- try(modified.get_modified_files())
+      Ok(modified.modfied_files_match(modfied_files, action.files))
+    }
+  })
+
+  case run_action {
     True -> {
       let #(bin, args) = case action.kind {
         Module -> #(gleam, ["run", "-m", action.command, "--", ..action.args])
