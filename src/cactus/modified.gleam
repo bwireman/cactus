@@ -32,7 +32,7 @@ pub fn modfied_files_match(modfied_files: List(String), watched: List(String)) {
   }
   || {
     list.filter(watched, string.starts_with(_, "./"))
-    |> list.map(string.drop_left(_, 2))
+    |> list.map(string.drop_start(_, 2))
     |> list.append(watched)
     |> list.unique()
     |> list.any(list.contains(modfied_files, _))
