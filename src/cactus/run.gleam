@@ -64,10 +64,10 @@ fn do_run(action: Action) {
     // if file no specific files watched we can just run
     True -> Ok(True)
 
-    // only check for modified files if it's relavent to action
+    // only check for modified files if it's relevant to action
     _ -> {
-      use modfied_files <- try(modified.get_modified_files())
-      Ok(modified.modfied_files_match(modfied_files, action.files))
+      use modified_files <- try(modified.get_modified_files())
+      Ok(modified.modified_files_match(modified_files, action.files))
     }
   })
 
