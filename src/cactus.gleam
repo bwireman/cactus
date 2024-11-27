@@ -8,18 +8,15 @@ import filepath
 import gleam/list
 import gleam/result
 import gleam/string
+import gxyz/gxyz_list.{reject}
 import shellout
 import simplifile
 
-fn not_ends_with(v: String, suffix: String) -> Bool {
-  !string.ends_with(v, suffix)
-}
-
 fn get_cmd() -> String {
   shellout.arguments()
-  |> list.filter(not_ends_with(_, ".js"))
-  |> list.filter(not_ends_with(_, ".mjs"))
-  |> list.filter(not_ends_with(_, ".cjs"))
+  |> reject(string.ends_with(_, ".js"))
+  |> reject(string.ends_with(_, ".mjs"))
+  |> reject(string.ends_with(_, ".cjs"))
   |> list.last()
   |> result.unwrap("")
 }

@@ -1,9 +1,9 @@
 import gleam/dict.{type Dict}
 import gleam/io
-import gleam/list
 import gleam/result.{replace_error}
 import gleam/string
 import gleither.{type Either, Left, Right}
+import gxyz/gxyz_list.{reject}
 import shellout
 import simplifile.{type FileError, describe_error}
 import tom.{type GetError, type Toml, NotFound, WrongType}
@@ -84,7 +84,7 @@ pub fn err_as_str(err: CactusErr) -> String {
 }
 
 pub fn drop_empty(l: List(String)) -> List(String) {
-  list.filter(l, fn(s) { !string.is_empty(s) })
+  reject(l, string.is_empty(_))
 }
 
 pub fn quote(str: String) -> String {
