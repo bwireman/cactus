@@ -20,9 +20,7 @@ always_init = true
 
 [cactus.pre-commit]
 actions = [
-    { command = "format", kind = "sub_command", args = [
-        "--check",
-    ], files = [
+    { command = "./scripts/format.sh", kind = "binary", files = [
         ".gleam",
     ] },
     { command = "./scripts/test.sh", kind = "binary" },
@@ -38,8 +36,14 @@ actions = [
 
 [cactus.test]
 actions = [
-    { command = "touch", kind = "binary", args =[".another.test-run"] },
-    { command = "touch", kind = "binary", args = [".test-run"], files = [".another.test-run"] },
+    { command = "touch", kind = "binary", args = [
+        ".another.test-run",
+    ] },
+    { command = "touch", kind = "binary", args = [
+        ".test-run",
+    ], files = [
+        ".another.test-run",
+    ] },
 ]
 
 [dependencies]
