@@ -1,21 +1,14 @@
+import cactus/git
 import cactus/util
 import gleam/list
 import gleam/result.{try}
 import gleam/string
-import shellout
-
-fn list_files(args: List(String)) -> Result(List(String), util.CactusErr) {
-  shellout.command(run: "git", with: args, in: ".", opt: [])
-  |> result.map(string.split(_, "\n"))
-  |> result.map(util.drop_empty)
-  |> util.as_git_error()
-}
 
 pub fn get_modified_files() -> Result(List(String), util.CactusErr) {
   use modified <- try(
-    list_files(["ls-files", "--exclude-standard", "--others"]),
+    git.list_files(["ls-files", "--exclude-standard", "--others"]),
   )
-  use untracked <- try(list_files(["diff", "--name-only", "HEAD"]))
+  use untracked <- try(git.list_files(["diff", "--name-only", "HEAD"]))
 
   Ok(list.append(untracked, modified))
 }

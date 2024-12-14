@@ -1,3 +1,4 @@
+import cactus/git
 import cactus/modified
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
@@ -142,9 +143,26 @@ pub fn get_actions(
 }
 
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
-  use actions <- try(get_actions(path, action))
-  actions
-  |> list.map(parse_action)
-  |> list.map(result.try(_, do_run))
-  |> result.all
+  let action_res = {
+    use _ <- try(case action {
+      "pre-commit" -> git.stash_unstaged()
+
+      _ -> Ok("")
+    })
+
+    use actions <- try(get_actions(path, action))
+    actions
+    |> list.map(parse_action)
+    |> list.map(result.try(_, do_run))
+    |> result.all
+  }
+
+  case action {
+    "pre-commit" -> {
+      let _ = git.pop_stash()
+      action_res
+    }
+
+    _ -> action_res
+  }
 }

@@ -53,7 +53,7 @@ shellout = ">= 1.6.0 and < 2.0.0"
 simplifile = ">= 2.0.1 and < 3.0.0"
 filepath = ">= 1.0.0 and < 2.0.0"
 gleither = ">= 2.0.0 and < 3.0.0"
-gxyz = ">= 0.2.0 and < 1.0.0"
+gxyz = ">= 0.3.0 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
