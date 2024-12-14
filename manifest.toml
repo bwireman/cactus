@@ -26,7 +26,7 @@ gleam_stdlib = { version = ">= 0.34.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 gleither = { version = ">= 2.0.0 and < 3.0.0" }
 go_over = { version = ">= 2.1.0 and < 3.0.0" }
-gxyz = { version = ">= 0.2.0 and < 1.0.0" }
+gxyz = { version = ">= 0.3.0 and < 1.0.0" }
 shellout = { version = ">= 1.6.0 and < 2.0.0" }
 simplifile = { version = ">= 2.0.1 and < 3.0.0" }
 tom = { version = ">= 1.0.0 and < 2.0.0" }
