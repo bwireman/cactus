@@ -158,10 +158,9 @@ pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
   }
 
   case action, stash_res {
-    "pre-commit", Ok(True) -> {
-      let _ = git.pop_stash()
-      action_res
-    }
+    "pre-commit", Ok(True) ->
+      git.pop_stash()
+      |> result.try(fn(_) { action_res })
 
     _, _ -> action_res
   }
