@@ -143,26 +143,26 @@ pub fn get_actions(
 }
 
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
+  let stash_res = case action {
+    "pre-commit" -> git.stash_unstaged() |> result.replace(True)
+
+    _ -> Ok(False)
+  }
+
   let action_res = {
-    use _ <- try(case action {
-      "pre-commit" -> git.stash_unstaged()
-
-      _ -> Ok("")
-    })
-
     use actions <- try(get_actions(path, action))
     actions
     |> list.map(parse_action)
     |> list.map(result.try(_, do_run))
-    |> result.all
+    |> result.all()
   }
 
-  case action {
-    "pre-commit" -> {
+  case action, stash_res {
+    "pre-commit", Ok(True) -> {
       let _ = git.pop_stash()
       action_res
     }
 
-    _ -> action_res
+    _, _ -> action_res
   }
 }
