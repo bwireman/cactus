@@ -16,7 +16,7 @@ pub type CactusErr {
   ActionFailedErr(output: String)
   FSErr(path: String, err: FileError)
   CLIErr(arg: String)
-  GitError(err: String)
+  GitError(command: String, err: String)
   NoErr
 }
 
@@ -31,10 +31,13 @@ pub fn as_invalid_field_err(res: Result(a, GetError)) -> Result(a, CactusErr) {
   }
 }
 
-pub fn as_git_error(res: Result(a, #(Int, String))) -> Result(a, CactusErr) {
+pub fn as_git_error(
+  res: Result(a, #(Int, String)),
+  command: String,
+) -> Result(a, CactusErr) {
   case res {
     Ok(_) -> as_err(res, NoErr)
-    Error(#(_, output)) -> as_err(res, GitError(output))
+    Error(#(_, output)) -> as_err(res, GitError(command, output))
   }
 }
 
@@ -77,7 +80,8 @@ pub fn err_as_str(err: CactusErr) -> String {
 
     CLIErr(arg) -> "CLI Error: invalid arg " <> quote(arg)
 
-    GitError(err) -> "Error while running `git`: " <> quote(err)
+    GitError(command, err) ->
+      "Error while running " <> quote(command) <> " : " <> quote(err)
 
     NoErr -> panic as "how?"
   }
