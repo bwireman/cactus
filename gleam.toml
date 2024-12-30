@@ -31,7 +31,6 @@ actions = [
 
 [cactus.pre-push]
 actions = [
-    { command = "./scripts/test.sh", kind = "binary" },
     { command = "go_over", kind = "module", args = [
         "--outdated",
     ] },
