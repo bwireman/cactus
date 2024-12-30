@@ -16,8 +16,15 @@ const valid_hooks = [
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update", "test",
 ]
 
+fn gleam_name(windows: Bool) -> String {
+  case windows {
+    True -> "gleam.exe"
+    False -> "gleam"
+  }
+}
+
 @target(javascript)
-pub fn get_hook_template(path: String) -> String {
+pub fn get_hook_template(path: String, windows: Bool) -> String {
   let runtime =
     path
     |> parse_gleam_toml()
@@ -26,12 +33,18 @@ pub fn get_hook_template(path: String) -> String {
     |> try(tom.get_string(_, ["runtime"]))
     |> result.unwrap("nodejs")
 
-  "gleam run --target javascript --runtime " <> runtime <> " -m cactus -- "
+  "#!/bin/sh \n\n"
+  <> gleam_name(windows)
+  <> " run --target javascript --runtime "
+  <> runtime
+  <> " -m cactus -- "
 }
 
 @target(erlang)
-pub fn get_hook_template(_: String) -> String {
-  "gleam run --target erlang -m cactus -- "
+pub fn get_hook_template(_: String, windows: Bool) -> String {
+  "#!/bin/sh \n\n"
+  <> gleam_name(windows)
+  <> " run --target erlang -m cactus -- "
 }
 
 pub fn is_valid_hook_name(name: String) -> Bool {
@@ -42,6 +55,7 @@ pub fn create_script(
   hooks_dir: String,
   gleam_path: String,
   command: String,
+  windows: Bool,
 ) -> Result(String, CactusErr) {
   print_progress("Initializing hook: " <> quote(command))
   let path = filepath.join(hooks_dir, command)
@@ -51,7 +65,7 @@ pub fn create_script(
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
   use _ <- try(as_fs_err(
-    simplifile.write(path, get_hook_template(gleam_path) <> command),
+    simplifile.write(path, get_hook_template(gleam_path, windows) <> command),
     path,
   ))
 
@@ -63,7 +77,11 @@ pub fn create_script(
   |> as_fs_err(path)
 }
 
-pub fn init(hooks_dir: String, path: String) -> Result(List(String), CactusErr) {
+pub fn init(
+  hooks_dir: String,
+  path: String,
+  windows: Bool,
+) -> Result(List(String), CactusErr) {
   {
     use manifest <- try(parse_gleam_toml(path))
     use action_body <- result.map(
@@ -73,7 +91,7 @@ pub fn init(hooks_dir: String, path: String) -> Result(List(String), CactusErr) 
     action_body
     |> dict.keys()
     |> list.filter(is_valid_hook_name)
-    |> list.map(create_script(hooks_dir, path, _))
+    |> list.map(create_script(hooks_dir, path, _, windows))
     |> result.all
   }
   |> result.flatten

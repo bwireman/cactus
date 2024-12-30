@@ -47,13 +47,17 @@ pub fn main() -> Result(Nil, CactusErr) {
   let res = case cmd {
     "help" | "--help" | "-h" -> Ok(print_info(help))
 
+    "windows-init" ->
+      write.init(hooks_dir, gleam_toml, True)
+      |> result.replace(Nil)
+
     "" | "init" ->
-      write.init(hooks_dir, gleam_toml)
+      write.init(hooks_dir, gleam_toml, False)
       |> result.replace(Nil)
 
     arg -> {
       let _ = case util.parse_always_init(gleam_toml) {
-        True -> write.init(hooks_dir, gleam_toml)
+        True -> write.init(hooks_dir, gleam_toml, False)
         _ -> Ok([])
       }
 
