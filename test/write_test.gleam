@@ -14,23 +14,23 @@ const node_files = [
 
 pub fn init_test() {
   simplifile.delete_all([hook_dir])
-  |> should.be_ok
+  |> should.be_ok()
 
   write.init(hook_dir, "test/testdata/gleam/too_many.toml", False)
-  |> should.be_ok
+  |> should.be_ok()
   |> list.length
   |> should.equal(13)
 }
 
 pub fn create_script_test() {
   simplifile.delete_all([filepath.join(hook_dir, "test"), hook_dir])
-  |> should.be_ok
+  |> should.be_ok()
 
   write.create_script("test/testdata/scripts", "", "test", False)
-  |> should.be_ok
+  |> should.be_ok()
 
   simplifile.read("test/testdata/scripts/test")
-  |> should.be_ok
+  |> should.be_ok()
   |> should.equal(write.get_hook_template("./gleam.toml", False) <> "test")
 }
 
@@ -44,10 +44,14 @@ pub fn get_hook_template_test() {
   ))
 
   write.get_hook_template("test/testdata/gleam/bun.toml", False)
-  |> should.equal("#!/bin/sh \n\ngleam run --target javascript --runtime bun -m cactus -- ")
+  |> should.equal(
+    "#!/bin/sh \n\ngleam run --target javascript --runtime bun -m cactus -- ",
+  )
 
   write.get_hook_template("test/testdata/gleam/deno.toml", False)
-  |> should.equal("#!/bin/sh \n\ngleam run --target javascript --runtime deno -m cactus -- ")
+  |> should.equal(
+    "#!/bin/sh \n\ngleam run --target javascript --runtime deno -m cactus -- ",
+  )
 }
 
 @target(erlang)

@@ -48,6 +48,7 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - run: git.exe config --global user.email "cactus-windows-erlang-test@example.com"
       - run: git.exe config --global user.name "cactus-windows erlang-test"
+      - run: git.exe stash"
       - run: gleam.exe run -- windows-init
       - run: gleam.exe test
       - run: type ./.git/hooks/pre-commit
