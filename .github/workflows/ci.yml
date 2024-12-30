@@ -53,7 +53,7 @@ jobs:
       - run: type ./.git/hooks/pre-commit
       - run: dir ./.git/hooks
       - run: git.exe add .
-      - run: git commit -m "windows & erlang test"
+      - run: git.exe commit -m "windows & erlang test"
 
   node:
     runs-on: ubuntu-latest
