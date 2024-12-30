@@ -48,6 +48,7 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - run: gleam.exe run
       - run: gleam.exe test
+      - run: type ./.git/hooks/test
       - run: ./.git/hooks/test
 
   node:
