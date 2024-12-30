@@ -50,6 +50,7 @@ jobs:
       - run: git.exe config --global user.name "cactus-windows erlang-test"
       - run: gleam.exe run -- windows-init
       - run: gleam.exe test
+      - run: git.exe checkout -b test-erlang-windows
       - run: git.exe push --dry-run
 
   # node:
