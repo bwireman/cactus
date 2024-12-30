@@ -57,6 +57,23 @@ jobs:
       - run: yarn install
       - run: ./scripts/target_test.sh javascript nodejs
 
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.otp }}
+          gleam-version: ${{ env.gleam }}
+          rebar3-version: ${{ env.rebar }}
+      - name: Use Windows & Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "npm"
+      - run: yarn install
+      - run: ./scripts/target_test.sh javascript nodejs
+
   bun:
     runs-on: ubuntu-latest
     steps:
