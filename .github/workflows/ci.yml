@@ -46,10 +46,11 @@ jobs:
           otp-version: ${{ env.otp }}
           gleam-version: ${{ env.gleam }}
           rebar3-version: ${{ env.rebar }}
-      - run: gleam.exe run
+      - run: gleam.exe run -- windows-init
       - run: gleam.exe test
       - run: type ./.git/hooks/test
-      - run: ./.git/hooks/test
+      - run: git.exe add .
+      - run: git commit -m "windows & erlang test"
 
   node:
     runs-on: ubuntu-latest
