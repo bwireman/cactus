@@ -51,7 +51,7 @@ jobs:
       - run: gleam.exe run -- windows-init
       - run: gleam.exe test
       - run: git.exe checkout -b test-erlang-windows
-      - run: git.exe push --dry-run
+      - run: git.exe push --dry-run --set-upstream origin test-erlang-windows
 
   # node:
   #   runs-on: ubuntu-latest
