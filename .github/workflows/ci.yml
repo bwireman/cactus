@@ -50,6 +50,8 @@ jobs:
       - run: gleam.exe test
       - run: type ./.git/hooks/test
       - run: git.exe add .
+      - run: git.exe config --global user.email "cactus-windows-erlang-test@example.com"
+      - run: git.exe config --global user.name "cactus-windows erlang-test"
       - run: git commit -m "windows & erlang test"
 
   node:
