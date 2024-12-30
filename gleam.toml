@@ -15,6 +15,9 @@ runtime = "nodejs"
 [javascript.deno]
 allow_all = true
 
+[go-over.ignore]
+packages = ["gleam_hexpm"]
+
 [cactus]
 always_init = true
 
