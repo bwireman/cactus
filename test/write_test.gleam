@@ -40,14 +40,14 @@ pub fn get_hook_template_test() {
   |> list.map(write.get_hook_template(_, False))
   |> list.each(should.equal(
     _,
-    "gleam run --target javascript --runtime nodejs -m cactus -- ",
+    "#!/bin/sh \n\ngleam run --target javascript --runtime nodejs -m cactus -- ",
   ))
 
   write.get_hook_template("test/testdata/gleam/bun.toml", False)
-  |> should.equal("gleam run --target javascript --runtime bun -m cactus -- ")
+  |> should.equal("#!/bin/sh \n\ngleam run --target javascript --runtime bun -m cactus -- ")
 
   write.get_hook_template("test/testdata/gleam/deno.toml", False)
-  |> should.equal("gleam run --target javascript --runtime deno -m cactus -- ")
+  |> should.equal("#!/bin/sh \n\ngleam run --target javascript --runtime deno -m cactus -- ")
 }
 
 @target(erlang)

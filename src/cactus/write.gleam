@@ -33,7 +33,8 @@ pub fn get_hook_template(path: String, windows: Bool) -> String {
     |> try(tom.get_string(_, ["runtime"]))
     |> result.unwrap("nodejs")
 
-  gleam_name(windows)
+  "#!/bin/sh \n\n"
+  <> gleam_name(windows)
   <> " run --target javascript --runtime "
   <> runtime
   <> " -m cactus -- "
@@ -41,7 +42,9 @@ pub fn get_hook_template(path: String, windows: Bool) -> String {
 
 @target(erlang)
 pub fn get_hook_template(_: String, windows: Bool) -> String {
-  gleam_name(windows) <> " run --target erlang -m cactus -- "
+  "#!/bin/sh \n\n"
+  <> gleam_name(windows)
+  <> " run --target erlang -m cactus -- "
 }
 
 pub fn is_valid_hook_name(name: String) -> Bool {
