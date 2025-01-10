@@ -1,0 +1,11 @@
+[cactus]
+
+[cactus.pre-push]
+actions = [
+    { command = "A", kind = "sub_command" },
+    { command = "B", args = ["--outdated"] },
+    { command = "C", kind = "binary" },
+]
+
+[javascript]
+x = true

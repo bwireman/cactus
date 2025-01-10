@@ -62,5 +62,8 @@ pub fn get_hook_template_test() {
     ..node_files
   ]
   |> list.map(write.get_hook_template(_, False))
-  |> list.each(should.equal(_, "gleam run --target erlang -m cactus -- "))
+  |> list.each(should.equal(
+    _,
+    "#!/bin/sh \n\ngleam run --target erlang -m cactus -- ",
+  ))
 }

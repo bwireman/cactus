@@ -13,6 +13,10 @@ pub fn parse_action_test() {
   run.get_actions("test/testdata/gleam/basic.toml", "pre-commit")
   |> should.be_error()
 
+  // not present
+  run.get_actions("test/testdata/gleam/dos.toml", "pre-commit")
+  |> should.be_error()
+
   let assert [a, b, c] =
     parse("test/testdata/gleam/basic.toml", "pre-push")
     |> list.map(should.be_ok)
@@ -28,11 +32,26 @@ pub fn parse_action_test() {
   should.equal(c.kind, run.Binary)
   should.equal(c.args, [])
 
+  let assert [dos_a, dos_b, dos_c] =
+    parse("test/testdata/gleam/dos.toml", "pre-push")
+    |> list.map(should.be_ok)
+  should.equal(dos_a.command, "A")
+  should.equal(dos_a.kind, run.SubCommand)
+  should.equal(dos_a.args, [])
+
+  should.equal(dos_b.command, "B")
+  should.equal(dos_b.kind, run.Module)
+  should.equal(dos_b.args, ["--outdated"])
+
+  should.equal(dos_c.command, "C")
+  should.equal(dos_c.kind, run.Binary)
+  should.equal(dos_c.args, [])
+
   run.get_actions("test/testdata/gleam/empty.toml", "")
-  |> should.be_error
+  |> should.be_error()
 
   run.get_actions("test/testdata/gleam/invalid.toml", "no-actions")
-  |> should.be_error
+  |> should.be_error()
 
   run.get_actions("test/testdata/gleam/invalid.toml", "actions-wrong-type")
   |> should.be_error()
@@ -47,9 +66,9 @@ pub fn parse_action_test() {
   |> list.map(should.be_error)
 
   run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
-  |> should.be_ok
+  |> should.be_ok()
   |> should.equal([])
 
   run.get_actions("test/testdata/gleam/fake.toml", "")
-  |> should.be_error
+  |> should.be_error()
 }
