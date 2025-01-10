@@ -97,7 +97,10 @@ pub fn quote(str: String) -> String {
 
 pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
   use body <- result.try(as_fs_err(simplifile.read(path), path))
-  tom.parse(body) |> as_err(InvalidTomlErr)
+  body
+  |> string.replace("\r\n", "\n")
+  |> tom.parse()
+  |> as_err(InvalidTomlErr)
 }
 
 pub fn parse_always_init(path: String) {
