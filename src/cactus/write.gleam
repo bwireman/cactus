@@ -57,7 +57,11 @@ pub fn create_script(
   command: String,
   windows: Bool,
 ) -> Result(String, CactusErr) {
-  print_progress("Initializing hook: " <> quote(command))
+  case command == "test" {
+    False -> print_progress("Initializing hook: " <> quote(command))
+    _ -> Nil
+  }
+
   let path = filepath.join(hooks_dir, command)
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
