@@ -38,8 +38,8 @@ and more!
 
 Usage:
 1. Configure your desired hooks in your project's `gleam.toml`
-  - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#%EF%B8%8F-config
-2. Run `gleam run --target <erlang|javascript> -m cactus`
+  - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#config
+2. Run `gleam run --target <erlang|javascript> -m cactus (windows-init) if on windows`
 3. Celebrate! 🎉
 "
 
