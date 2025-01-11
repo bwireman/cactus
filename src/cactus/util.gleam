@@ -119,15 +119,28 @@ pub fn join_text(text: List(String)) -> String {
 
 pub fn print_progress(msg: String) {
   shellout.style(msg, with: shellout.color(["brightmagenta"]), custom: [])
-  |> io.println
+  |> io.println()
 }
 
 pub fn print_warning(msg: String) {
   shellout.style(msg <> "\n", with: shellout.color(["red"]), custom: [])
-  |> io.println
+  |> io.println()
+}
+
+pub fn format_success(msg: String) -> String {
+  shellout.style(msg, with: shellout.color(["brightgreen"]), custom: [])
+}
+
+pub fn print_success(msg: String) {
+  format_success(msg <> "\n")
+  |> io.println()
+}
+
+pub fn format_info(msg: String) {
+  shellout.style(msg, with: shellout.color(["yellow"]), custom: [])
 }
 
 pub fn print_info(msg: String) {
-  shellout.style(msg <> "\n", with: shellout.color(["yellow"]), custom: [])
-  |> io.println
+  format_info(msg <> "\n")
+  |> io.println()
 }
