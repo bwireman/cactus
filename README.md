@@ -19,6 +19,8 @@ gleam add --dev cactus
 
 Bun, Deno & Nodejs are _all_ supported!
 
+![demo](https://raw.githubusercontent.com/bwireman/cactus/main/images/demo.gif)
+
 # ▶️ Usage
 
 **_FIRST_** configure hooks and then run
