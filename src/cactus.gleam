@@ -1,10 +1,8 @@
 import cactus/run
-import cactus/util.{
-  type CactusErr, CLIErr, as_fs_err, err_as_str, join_text, print_info,
-  print_warning, quote,
-}
+import cactus/util.{type CactusErr, CLIErr}
 import cactus/write
 import filepath
+import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
@@ -21,11 +19,22 @@ fn get_cmd() -> String {
   |> result.unwrap("")
 }
 
-const help = "
-🌵 Cactus (version: 1.3.0)
----------------------------------------
-A tool for managing git lifecycle hooks
-with ✨ gleam! Pre commit, Pre push
+const help_header = "
+    _
+   | |  _
+ _ | | | |
+| || |_| |                 _
+| || |_,_|   ___ __ _  ___| |_ _   _ ___
+ \\_| |      / __/ _` |/ __| __| | | / __|
+   | |     | (_| (_| | (__| |_| |_| \\__ \\
+   |_|      \\___\\__,_|\\___|\\__|\\__,_|___/
+"
+
+const help_body = "
+version: 1.3.0
+--------------------------------------------
+A tool for managing git lifecycle hooks with
+✨ gleam! Pre commit, Pre push
 and more!
 
 Usage:
@@ -36,7 +45,7 @@ Usage:
 "
 
 pub fn main() -> Result(Nil, CactusErr) {
-  use pwd <- result.map(as_fs_err(simplifile.current_directory(), "."))
+  use pwd <- result.map(util.as_fs_err(simplifile.current_directory(), "."))
   let gleam_toml = filepath.join(pwd, "gleam.toml")
   let hooks_dir =
     pwd
@@ -45,7 +54,12 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   let cmd = get_cmd()
   let res = case cmd {
-    "help" | "--help" | "-h" -> Ok(print_info(help))
+    "help" | "--help" | "-h" -> {
+      { util.format_success(help_header) <> util.format_info(help_body) }
+      |> io.print()
+
+      Ok(Nil)
+    }
 
     "windows-init" ->
       write.init(hooks_dir, gleam_toml, True)
@@ -73,14 +87,14 @@ pub fn main() -> Result(Nil, CactusErr) {
     Ok(_) -> Nil
 
     Error(CLIErr(err)) -> {
-      print_warning(err_as_str(CLIErr(err)))
+      util.print_warning(util.err_as_str(CLIErr(err)))
       shellout.exit(1)
     }
 
     Error(reason) -> {
-      [quote(cmd), "hook failed. Reason:", err_as_str(reason)]
-      |> join_text()
-      |> print_warning()
+      [util.quote(cmd), "hook failed. Reason:", util.err_as_str(reason)]
+      |> util.join_text()
+      |> util.print_warning()
       shellout.exit(1)
     }
   }
