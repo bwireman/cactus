@@ -19,8 +19,7 @@ fn get_cmd() -> String {
   |> result.unwrap("")
 }
 
-const help_header = "
-    _
+const help_header = "    _
    | |  _
  _ | | | |
 | || |_| |                 _
@@ -54,8 +53,11 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   let cmd = get_cmd()
   let res = case cmd {
-    "help" | "--help" | "-h" -> {
-      { util.format_success(help_header) <> util.format_info(help_body) }
+    "help" | "--help" | "-h" | "-help" -> {
+      util.format_success(help_header)
+      |> io.print()
+
+      util.format_info(help_body)
       |> io.print()
 
       Ok(Nil)

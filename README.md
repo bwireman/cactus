@@ -29,7 +29,7 @@ Bun, Deno & Nodejs are _all_ supported!
 gleam run --target <javascript|erlang> -m cactus
 ```
 
-### ⚙️ Config
+### Config
 
 Settings that can be added to your project's `gleam.toml`
 
