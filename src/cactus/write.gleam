@@ -7,6 +7,8 @@ import gleam/dict
 import gleam/list
 import gleam/result.{try}
 import gleam/set
+@target(javascript)
+import platform
 import simplifile
 import tom
 
@@ -24,14 +26,14 @@ fn gleam_name(windows: Bool) -> String {
 }
 
 @target(javascript)
-pub fn get_hook_template(path: String, windows: Bool) -> String {
-  let runtime =
-    path
-    |> parse_gleam_toml()
-    |> result.replace_error(tom.NotFound([]))
-    |> try(tom.get_table(_, ["javascript"]))
-    |> try(tom.get_string(_, ["runtime"]))
-    |> result.unwrap("nodejs")
+pub fn get_hook_template(windows: Bool) -> String {
+  let runtime = case platform.runtime() {
+    platform.Node -> "node"
+    platform.Bun -> "bun"
+    platform.Deno -> "deno"
+    _ ->
+      panic as "Invalid runtime, please create an issue in https://github.com/bwireman/cactus if you see this"
+  }
 
   "#!/bin/sh \n\n"
   <> gleam_name(windows)
@@ -41,7 +43,7 @@ pub fn get_hook_template(path: String, windows: Bool) -> String {
 }
 
 @target(erlang)
-pub fn get_hook_template(_: String, windows: Bool) -> String {
+pub fn get_hook_template(windows: Bool) -> String {
   "#!/bin/sh \n\n"
   <> gleam_name(windows)
   <> " run --target erlang -m cactus -- "
@@ -53,7 +55,6 @@ pub fn is_valid_hook_name(name: String) -> Bool {
 
 pub fn create_script(
   hooks_dir: String,
-  gleam_path: String,
   command: String,
   windows: Bool,
 ) -> Result(String, CactusErr) {
@@ -69,7 +70,7 @@ pub fn create_script(
   let _ = simplifile.create_directory(hooks_dir)
   let _ = simplifile.create_file(path)
   use _ <- try(as_fs_err(
-    simplifile.write(path, get_hook_template(gleam_path, windows) <> command),
+    simplifile.write(path, get_hook_template(windows) <> command),
     path,
   ))
 
@@ -95,8 +96,8 @@ pub fn init(
     action_body
     |> dict.keys()
     |> list.filter(is_valid_hook_name)
-    |> list.map(create_script(hooks_dir, path, _, windows))
-    |> result.all
+    |> list.map(create_script(hooks_dir, _, windows))
+    |> result.all()
   }
-  |> result.flatten
+  |> result.flatten()
 }

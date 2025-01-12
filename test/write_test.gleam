@@ -2,15 +2,11 @@ import cactus/write
 import filepath
 import gleam/list
 import gleeunit/should
+@target(javascript)
+import platform
 import simplifile
 
 const hook_dir = "test/testdata/scripts"
-
-const node_files = [
-  "./gleam.toml", "test/testdata/gleam/basic.toml",
-  "test/testdata/gleam/empty.toml", "foo/bar/baz",
-  "test/testdata/gleam/node.toml", "test/testdata/gleam/junk.toml",
-]
 
 pub fn init_test() {
   simplifile.delete_all([hook_dir])
@@ -26,44 +22,33 @@ pub fn create_script_test() {
   simplifile.delete_all([filepath.join(hook_dir, "test"), hook_dir])
   |> should.be_ok()
 
-  write.create_script("test/testdata/scripts", "", "test", False)
+  write.create_script("test/testdata/scripts", "test", False)
   |> should.be_ok()
 
   simplifile.read("test/testdata/scripts/test")
   |> should.be_ok()
-  |> should.equal(write.get_hook_template("./gleam.toml", False) <> "test")
+  |> should.equal(write.get_hook_template(False) <> "test")
 }
 
 @target(javascript)
 pub fn get_hook_template_test() {
-  node_files
-  |> list.map(write.get_hook_template(_, False))
-  |> list.each(should.equal(
-    _,
-    "#!/bin/sh \n\ngleam run --target javascript --runtime nodejs -m cactus -- ",
-  ))
+  let runtime = case platform.runtime() {
+    platform.Node -> "node"
+    platform.Bun -> "bun"
+    platform.Deno -> "deno"
+    _ -> panic as "invalid runtime"
+  }
 
-  write.get_hook_template("test/testdata/gleam/bun.toml", False)
+  write.get_hook_template(False)
   |> should.equal(
-    "#!/bin/sh \n\ngleam run --target javascript --runtime bun -m cactus -- ",
-  )
-
-  write.get_hook_template("test/testdata/gleam/deno.toml", False)
-  |> should.equal(
-    "#!/bin/sh \n\ngleam run --target javascript --runtime deno -m cactus -- ",
+    "#!/bin/sh \n\ngleam run --target javascript --runtime "
+    <> runtime
+    <> " -m cactus -- ",
   )
 }
 
 @target(erlang)
 pub fn get_hook_template_test() {
-  [
-    "test/testdata/gleam/bun.toml",
-    "test/testdata/gleam/deno.toml",
-    ..node_files
-  ]
-  |> list.map(write.get_hook_template(_, False))
-  |> list.each(should.equal(
-    _,
-    "#!/bin/sh \n\ngleam run --target erlang -m cactus -- ",
-  ))
+  write.get_hook_template(False)
+  |> should.equal("#!/bin/sh \n\ngleam run --target erlang -m cactus -- ")
 }
