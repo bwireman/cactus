@@ -15,6 +15,11 @@ runtime = "nodejs"
 [javascript.deno]
 allow_all = true
 
+[go-over]
+cache = true
+global = true
+outdated = true
+
 [cactus]
 always_init = true
 
@@ -53,6 +58,7 @@ simplifile = ">= 2.0.1 and < 3.0.0"
 filepath = ">= 1.0.0 and < 2.0.0"
 gleither = ">= 2.0.0 and < 3.0.0"
 gxyz = ">= 0.3.0 and < 1.0.0"
+platform = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
