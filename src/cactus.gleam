@@ -7,6 +7,7 @@ import gleam/list
 import gleam/result
 import gleam/string
 import gxyz/gxyz_list.{reject}
+import platform
 import shellout
 import simplifile
 
@@ -39,7 +40,7 @@ and more!
 Usage:
 1. Configure your desired hooks in your project's `gleam.toml`
   - More info: https://github.com/bwireman/cactus?tab=readme-ov-file#config
-2. Run `gleam run --target <erlang|javascript> -m cactus (windows-init) if on windows`
+2. Run `gleam run --target <erlang|javascript> -m cactus`
 3. Celebrate! 🎉
 "
 
@@ -67,8 +68,12 @@ pub fn main() -> Result(Nil, CactusErr) {
       write.init(hooks_dir, gleam_toml, True)
       |> result.replace(Nil)
 
-    "" | "init" ->
+    "unix-init" ->
       write.init(hooks_dir, gleam_toml, False)
+      |> result.replace(Nil)
+
+    "" | "init" ->
+      write.init(hooks_dir, gleam_toml, platform.os() == platform.Win32)
       |> result.replace(Nil)
 
     arg -> {
