@@ -14,7 +14,7 @@ pub fn init_test() {
 
   write.init(hook_dir, "test/testdata/gleam/too_many.toml", False)
   |> should.be_ok()
-  |> list.length
+  |> list.length()
   |> should.equal(13)
 }
 
@@ -45,10 +45,20 @@ pub fn get_hook_template_test() {
     <> runtime
     <> " -m cactus -- ",
   )
+
+  write.get_hook_template(True)
+  |> should.equal(
+    "#!/bin/sh \n\ngleam.exe run --target javascript --runtime "
+    <> runtime
+    <> " -m cactus -- ",
+  )
 }
 
 @target(erlang)
 pub fn get_hook_template_test() {
   write.get_hook_template(False)
   |> should.equal("#!/bin/sh \n\ngleam run --target erlang -m cactus -- ")
+
+  write.get_hook_template(True)
+  |> should.equal("#!/bin/sh \n\ngleam.exe run --target erlang -m cactus -- ")
 }
