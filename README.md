@@ -19,6 +19,8 @@ gleam add --dev cactus
 
 Bun, Deno & Nodejs are _all_ supported!
 
+### 🎥 Obligatory VHS
+
 ![demo](https://raw.githubusercontent.com/bwireman/cactus/main/images/demo.gif)
 
 # ▶️ Usage
@@ -28,7 +30,7 @@ Bun, Deno & Nodejs are _all_ supported!
 ```sh
 # initialize configured hooks
 # specify the target depending on how you want the hooks to run
-gleam run --target <javascript|erlang> -m cactus
+gleam run  -m cactus
 ```
 
 ### Config
@@ -47,8 +49,7 @@ actions = [
     # command: name of the command or binary to be run: required
     # kind: is it a gleam subcommand, a binary or a module: ["sub_command", "binary", "module"], default: module
     # args: additional args to be passed to the command, default: []
-    # files: file paths & endings that you want to trigger the action
-    # default: [] (meaning always trigger)
+    # files: file paths & endings that you want to trigger the action, default: [] (meaning always trigger)
 
     # check formatting
     { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam", "src/f/oo.gleam"] },
@@ -56,6 +57,6 @@ actions = [
     { command = "./scripts/test.sh", kind = "binary" },
     # check dependencies 🕵️‍♂️
     # self plug of https://github.com/bwireman/go-over
-    { command = "go_over", kind = "module", args=["--outdated"] }
+    { command = "go_over", args=["--outdated"] }
 ]
 ```
