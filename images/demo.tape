@@ -9,7 +9,7 @@ Set BorderRadius 12
 
 #setup
 Hide
-Type `rm -rf .go-over/mirego-elixir-security-advisories .go-over/deps/s* && git branch -D demo && git branch demo --set-upstream-to origin demo && git checkout demo`
+Type `rm -rf ~/.go-over/mirego-elixir-security-advisories ~/.go-over/deps/s* && git branch -D demo && git branch demo --set-upstream-to origin demo && git checkout demo`
 Enter
 Type clear
 Enter
@@ -27,7 +27,7 @@ Enter
 Sleep 2s
 Type `git push --dry-run`
 Enter
-Sleep 8s
+Sleep 12s
 
 #teardown
 Hide
