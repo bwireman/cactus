@@ -3,7 +3,7 @@ import gleam/io
 import gleam/result.{replace_error}
 import gleam/string
 import gleither.{type Either, Left, Right}
-import gxyz/gxyz_list.{reject}
+import gxyz/list.{reject}
 import shellout
 import simplifile.{type FileError, describe_error}
 import tom.{type GetError, type Toml, NotFound, WrongType}

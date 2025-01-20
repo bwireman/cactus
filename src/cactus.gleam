@@ -5,17 +5,14 @@ import filepath
 import gleam/io
 import gleam/list
 import gleam/result
-import gleam/string
-import gxyz/gxyz_list.{reject}
+import gxyz/cli
 import platform
 import shellout
 import simplifile
 
 fn get_cmd() -> String {
   shellout.arguments()
-  |> reject(string.ends_with(_, ".js"))
-  |> reject(string.ends_with(_, ".mjs"))
-  |> reject(string.ends_with(_, ".cjs"))
+  |> cli.strip_js_from_argv()
   |> list.last()
   |> result.unwrap("")
 }
