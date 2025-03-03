@@ -19,6 +19,8 @@ allow_all = true
 cache = true
 global = true
 outdated = true
+puller = "wget"
+allowed_licenses = ["MIT", "Apache-2.0", "BSD 2-Clause", "WTFPL"]
 
 [cactus]
 always_init = true
@@ -62,4 +64,4 @@ platform = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
-go_over = ">= 2.1.0 and < 3.0.0"
+go_over = ">= 3.0.0 and < 4.0.0"
