@@ -88,7 +88,7 @@ pub fn err_as_str(err: CactusErr) -> String {
 }
 
 pub fn drop_empty(l: List(String)) -> List(String) {
-  reject(l, string.is_empty(_))
+  reject(l, string.is_empty)
 }
 
 pub fn quote(str: String) -> String {
