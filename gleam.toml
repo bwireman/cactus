@@ -1,9 +1,8 @@
 name = "cactus"
-version = "1.3.3"
+version = "1.3.4"
 licences = ["MIT"]
 repository = { type = "github", user = "bwireman", repo = "cactus" }
 description = "A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and more!"
-gleam = ">= 1.4.0"
 links = []
 internal_modules = ["cactus/*"]
 target = "javascript"
@@ -23,7 +22,7 @@ puller = "wget"
 allowed_licenses = ["MIT", "Apache-2.0", "BSD 2-Clause", "WTFPL"]
 
 [go-over.ignore]
-packages = ["gleam_hexpm"]
+packages = ["tom"]
 
 [cactus]
 always_init = true

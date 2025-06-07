@@ -28,7 +28,7 @@ const help_header = "    _
 "
 
 const help_body = "
-version: 1.3.3
+version: 1.3.4
 --------------------------------------------
 A tool for managing git lifecycle hooks with
 ✨ gleam! Pre commit, Pre push
