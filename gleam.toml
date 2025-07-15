@@ -18,11 +18,10 @@ allow_all = true
 cache = true
 global = true
 outdated = true
-puller = "wget"
 allowed_licenses = ["MIT", "Apache-2.0", "BSD 2-Clause", "WTFPL"]
 
 [go-over.ignore]
-packages = ["tom"]
+packages = []
 
 [cactus]
 always_init = true
