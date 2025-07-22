@@ -16,20 +16,15 @@ pub fn parse_gleam_toml_test() {
 }
 
 pub fn parse_always_init_test() {
-  util.parse_always_init("test/testdata/gleam/basic.toml")
-  |> should.be_false()
+  assert !util.parse_always_init("test/testdata/gleam/basic.toml")
 
-  util.parse_always_init("test/testdata/gleam/basic.toml")
-  |> should.be_false()
+  assert !util.parse_always_init("test/testdata/gleam/basic.toml")
 
-  util.parse_always_init("test/testdata/gleam/too_many.toml")
-  |> should.be_false()
+  assert !util.parse_always_init("test/testdata/gleam/too_many.toml")
 
-  util.parse_always_init("test/testdata/gleam/foo.toml")
-  |> should.be_false()
+  assert !util.parse_always_init("test/testdata/gleam/foo.toml")
 
-  util.parse_always_init("test/testdata/gleam/always.toml")
-  |> should.be_true()
+  assert util.parse_always_init("test/testdata/gleam/always.toml")
 }
 
 pub fn drop_empty_test() {

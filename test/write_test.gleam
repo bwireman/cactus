@@ -9,8 +9,7 @@ import simplifile
 const hook_dir = "test/testdata/scripts"
 
 pub fn init_test() {
-  simplifile.delete_all([hook_dir])
-  |> should.be_ok()
+  let assert Ok(_) = simplifile.delete_all([hook_dir])
 
   write.init(hook_dir, "test/testdata/gleam/too_many.toml", False)
   |> should.be_ok()
@@ -19,15 +18,13 @@ pub fn init_test() {
 }
 
 pub fn create_script_test() {
-  simplifile.delete_all([filepath.join(hook_dir, "test"), hook_dir])
-  |> should.be_ok()
+  let assert Ok(_) =
+    simplifile.delete_all([filepath.join(hook_dir, "test"), hook_dir])
 
-  write.create_script("test/testdata/scripts", "test", False)
-  |> should.be_ok()
+  let assert Ok(_) = write.create_script("test/testdata/scripts", "test", False)
 
-  simplifile.read("test/testdata/scripts/test")
-  |> should.be_ok()
-  |> should.equal(write.get_hook_template(False) <> "test")
+  let assert Ok(actual) = simplifile.read("test/testdata/scripts/test")
+  assert actual == write.get_hook_template(False) <> "test"
 }
 
 @target(javascript)

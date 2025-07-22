@@ -1,63 +1,43 @@
 import cactus/modified.{matches_ending, modified_files_match}
-import gleeunit/should
 
 pub fn matches_ending_test() {
-  matches_ending("foo", [])
-  |> should.be_false()
+  assert !matches_ending("foo", [])
 
-  matches_ending("foo", [".foo"])
-  |> should.be_false()
+  assert !matches_ending("foo", [".foo"])
 
-  matches_ending(".foo", [".foo"])
-  |> should.be_true()
+  assert matches_ending(".foo", [".foo"])
 
-  matches_ending(".foo", [".foo", ".bar", ".baz"])
-  |> should.be_true()
+  assert matches_ending(".foo", [".foo", ".bar", ".baz"])
 }
 
 pub fn modified_files_match_test() {
-  modified_files_match(["foo"], ["./foo"])
-  |> should.be_true()
+  assert modified_files_match(["foo"], ["./foo"])
 
-  modified_files_match(["foo"], ["foo"])
-  |> should.be_true()
+  assert modified_files_match(["foo"], ["foo"])
 
-  modified_files_match(["foo"], [])
-  |> should.be_true()
+  assert modified_files_match(["foo"], [])
 
-  modified_files_match(["foo"], ["bar"])
-  |> should.be_false()
+  assert !modified_files_match(["foo"], ["bar"])
 
-  modified_files_match([""], [])
-  |> should.be_true()
+  assert modified_files_match([""], [])
 
-  modified_files_match([], [""])
-  |> should.be_true()
+  assert modified_files_match([], [""])
 
-  modified_files_match([], [".foo", ".bar"])
-  |> should.be_true()
+  assert modified_files_match([], [".foo", ".bar"])
 
-  modified_files_match([], [])
-  |> should.be_true()
+  assert modified_files_match([], [])
 
-  modified_files_match([""], [""])
-  |> should.be_true()
+  assert modified_files_match([""], [""])
 
-  modified_files_match(["foo"], [""])
-  |> should.be_true()
+  assert modified_files_match(["foo"], [""])
 
-  modified_files_match(["foo"], [".test"])
-  |> should.be_false()
+  assert !modified_files_match(["foo"], [".test"])
 
-  modified_files_match(["foo.test"], ["bar.test", ".test"])
-  |> should.be_true()
+  assert modified_files_match(["foo.test"], ["bar.test", ".test"])
 
-  modified_files_match(["foo.test"], ["./bar.test", ".test"])
-  |> should.be_true()
+  assert modified_files_match(["foo.test"], ["./bar.test", ".test"])
 
-  modified_files_match(["foo.test"], ["./bar.test", ""])
-  |> should.be_false()
+  assert !modified_files_match(["foo.test"], ["./bar.test", ""])
 
-  modified_files_match(["./bar.test"], [".test", "bar.test"])
-  |> should.be_true()
+  assert modified_files_match(["./bar.test"], [".test", "bar.test"])
 }

@@ -4,18 +4,18 @@ import gleeunit/should
 
 fn parse(file: String, action: String) {
   run.get_actions(file, action)
-  |> should.be_ok
+  |> should.be_ok()
   |> list.map(run.parse_action)
 }
 
 pub fn parse_action_test() {
   // not present
-  run.get_actions("test/testdata/gleam/basic.toml", "pre-commit")
-  |> should.be_error()
+  let assert Error(_) =
+    run.get_actions("test/testdata/gleam/basic.toml", "pre-commit")
 
   // not present
-  run.get_actions("test/testdata/gleam/dos.toml", "pre-commit")
-  |> should.be_error()
+  let assert Error(_) =
+    run.get_actions("test/testdata/gleam/dos.toml", "pre-commit")
 
   let assert [a, b, c] =
     parse("test/testdata/gleam/basic.toml", "pre-push")
@@ -47,14 +47,13 @@ pub fn parse_action_test() {
   should.equal(dos_c.kind, run.Binary)
   should.equal(dos_c.args, [])
 
-  run.get_actions("test/testdata/gleam/empty.toml", "")
-  |> should.be_error()
+  let assert Error(_) = run.get_actions("test/testdata/gleam/empty.toml", "")
 
-  run.get_actions("test/testdata/gleam/invalid.toml", "no-actions")
-  |> should.be_error()
+  let assert Error(_) =
+    run.get_actions("test/testdata/gleam/invalid.toml", "no-actions")
 
-  run.get_actions("test/testdata/gleam/invalid.toml", "actions-wrong-type")
-  |> should.be_error()
+  let assert Error(_) =
+    run.get_actions("test/testdata/gleam/invalid.toml", "actions-wrong-type")
 
   parse("test/testdata/gleam/invalid.toml", "actions-element-wrong-type")
   |> list.map(should.be_error)
@@ -65,10 +64,8 @@ pub fn parse_action_test() {
   parse("test/testdata/gleam/invalid.toml", "kind-wrong-type")
   |> list.map(should.be_error)
 
-  run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
-  |> should.be_ok()
-  |> should.equal([])
+  let assert Ok([]) =
+    run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
 
-  run.get_actions("test/testdata/gleam/fake.toml", "")
-  |> should.be_error()
+  let assert Error(_) = run.get_actions("test/testdata/gleam/fake.toml", "")
 }

@@ -30,7 +30,7 @@ Bun, Deno & Nodejs are _all_ supported!
 ```sh
 # initialize configured hooks
 # specify the target depending on how you want the hooks to run
-gleam run  -m cactus
+gleam run -m cactus
 ```
 
 ### Config
