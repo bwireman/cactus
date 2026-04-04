@@ -65,4 +65,4 @@ platform = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
-go_over = ">= 3.0.0 and < 4.0.0"
+go_over = ">= 3.2.1 and < 4.0.0"
