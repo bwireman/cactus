@@ -13,7 +13,10 @@ pub fn get_modified_files() -> Result(List(String), util.CactusErr) {
   Ok(list.append(untracked, modified))
 }
 
-pub fn modified_files_match(modified_files: List(String), watched: List(String)) {
+pub fn modified_files_match(
+  modified_files: List(String),
+  watched: List(String),
+) {
   let modified_files = util.drop_empty(modified_files)
   let watched = util.drop_empty(watched)
 
