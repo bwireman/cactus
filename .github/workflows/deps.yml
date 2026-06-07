@@ -2,6 +2,7 @@ name: Dependency Check
 
 on:
   schedule:
+    # run every friday at 9am UTC
     - cron: "0 9 * * 6"
   push:
     branches:
@@ -9,8 +10,8 @@ on:
   pull_request:
 
 env:
-  otp: "28.0"
-  gleam: "1.15.2"
+  otp: "28.3"
+  gleam: "1.17.0"
   rebar: "3"
 
 jobs:
@@ -18,13 +19,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v5
+        with:
+          path: |
+            build
+            .go-over/
+          key: ${{ runner.os }}-deps-check-${{ hashFiles('**/manifest.toml') }}
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{ env.otp }}
           gleam-version: ${{ env.gleam }}
           rebar3-version: ${{ env.rebar }}
       - run: gleam build
+      - run: gleam run -m go_over -- --format sarif --sarif-output go-over.sarif --local
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: go-over.sarif
       - run: gleam run -m go_over -- --outdated
+      # create an issue in the repo if there are
+      # outdated or vulnerable dependencies
       - uses: jayqi/failed-build-issue-action@v1
         if: failure()
         with:
