@@ -54,7 +54,7 @@ actions = [
 ]
 
 [dependencies]
-gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
 tom = ">= 2.0.0 and < 3.0.0"
 shellout = ">= 1.6.0 and < 2.0.0"
 simplifile = ">= 2.0.1 and < 3.0.0"
@@ -65,4 +65,4 @@ platform = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
-go_over = ">= 3.2.1 and < 4.0.0"
+go_over = ">= 4.0.0-rc1 and < 5.0.0"
