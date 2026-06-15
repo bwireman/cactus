@@ -72,7 +72,7 @@ pub fn parse_action_test() {
 }
 
 pub fn merge_stash_pop_result_test() {
-  let hook_err = ActionFailedErr("hook failed")
+  let hook_err = ActionFailedErr(1, 1, "false", "hook failed")
   let pop_err = GitError("git stash pop", "conflict")
 
   run.merge_stash_pop_result(Ok(""), Ok([]))

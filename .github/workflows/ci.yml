@@ -51,10 +51,7 @@ jobs:
           rebar3-version: ${{ env.rebar }}
       - run: git.exe config --global user.email "cactus-windows-erlang-test@example.com"
       - run: git.exe config --global user.name "cactus-windows erlang-test"
-      - run: gleam.exe run --target erlang
-      - run: gleam.exe test --target erlang
-      - run: git.exe checkout -b test-erlang-windows
-      - run: git.exe push --dry-run --set-upstream origin test-erlang-windows
+      - run: bash ./scripts/target_test.sh erlang
 
   windows-node:
     runs-on: windows-latest
@@ -74,10 +71,7 @@ jobs:
       - run: yarn install
       - run: git.exe config --global user.email "cactus-windows-node-test@example.com"
       - run: git.exe config --global user.name "cactus-windows node-test"
-      - run: gleam.exe run  --target javascript --runtime nodejs
-      - run: gleam.exe test --target javascript --runtime nodejs
-      - run: git.exe checkout -b test-node-windows
-      - run: git.exe push --dry-run --set-upstream origin test-node-windows
+      - run: bash ./scripts/target_test.sh javascript nodejs
 
   node:
     runs-on: ubuntu-latest

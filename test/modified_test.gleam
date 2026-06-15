@@ -1,43 +1,100 @@
-import cactus/modified.{matches_ending, modified_files_match}
+import cactus/modified.{
+  All, Staged, Unstaged, file_matches_pattern, modified_files_match,
+  parse_files_scope,
+}
+import gleeunit/should
 
-pub fn matches_ending_test() {
-  assert !matches_ending("foo", [])
+pub fn extension_match_test() {
+  file_matches_pattern("src/foo.gleam", ".gleam")
+  |> should.be_true()
 
-  assert !matches_ending("foo", [".foo"])
+  file_matches_pattern("foo", ".foo")
+  |> should.be_false()
 
-  assert matches_ending(".foo", [".foo"])
-
-  assert matches_ending(".foo", [".foo", ".bar", ".baz"])
+  file_matches_pattern(".foo", ".foo")
+  |> should.be_true()
 }
 
 pub fn modified_files_match_test() {
-  assert modified_files_match(["foo"], ["./foo"])
+  modified_files_match(["foo"], ["./foo"])
+  |> should.be_true()
 
-  assert modified_files_match(["foo"], ["foo"])
+  modified_files_match(["foo"], ["foo"])
+  |> should.be_true()
 
-  assert modified_files_match(["foo"], [])
+  modified_files_match(["foo"], [])
+  |> should.be_true()
 
-  assert !modified_files_match(["foo"], ["bar"])
+  modified_files_match(["foo"], ["bar"])
+  |> should.be_false()
 
-  assert modified_files_match([""], [])
+  modified_files_match([""], [])
+  |> should.be_true()
 
-  assert modified_files_match([], [""])
+  modified_files_match([], [""])
+  |> should.be_true()
 
-  assert modified_files_match([], [".foo", ".bar"])
+  modified_files_match([], [".foo", ".bar"])
+  |> should.be_true()
 
-  assert modified_files_match([], [])
+  modified_files_match([], [])
+  |> should.be_true()
 
-  assert modified_files_match([""], [""])
+  modified_files_match([""], [""])
+  |> should.be_true()
 
-  assert modified_files_match(["foo"], [""])
+  modified_files_match(["foo"], [""])
+  |> should.be_true()
 
-  assert !modified_files_match(["foo"], [".test"])
+  modified_files_match(["foo"], [".test"])
+  |> should.be_false()
 
-  assert modified_files_match(["foo.test"], ["bar.test", ".test"])
+  modified_files_match(["foo.test"], ["bar.test", ".test"])
+  |> should.be_true()
 
-  assert modified_files_match(["foo.test"], ["./bar.test", ".test"])
+  modified_files_match(["foo.test"], ["./bar.test", ".test"])
+  |> should.be_true()
 
-  assert !modified_files_match(["foo.test"], ["./bar.test", ""])
+  modified_files_match(["foo.test"], ["./bar.test", ""])
+  |> should.be_false()
 
-  assert modified_files_match(["./bar.test"], [".test", "bar.test"])
+  modified_files_match(["./bar.test"], [".test", "bar.test"])
+  |> should.be_true()
+}
+
+pub fn glob_match_src_root_test() {
+  file_matches_pattern("src/foo.gleam", "src/**/*.gleam")
+  |> should.be_true()
+}
+
+pub fn glob_match_src_nested_test() {
+  file_matches_pattern("src/nested/foo.gleam", "src/**/*.gleam")
+  |> should.be_true()
+}
+
+pub fn glob_match_src_negative_test() {
+  file_matches_pattern("test/foo.gleam", "src/**/*.gleam")
+  |> should.be_false()
+}
+
+pub fn glob_match_extension_test() {
+  file_matches_pattern("src/foo.gleam", "*.gleam")
+  |> should.be_true()
+}
+
+pub fn parse_files_scope_test() {
+  parse_files_scope("staged")
+  |> should.be_ok()
+  |> should.equal(Staged)
+
+  parse_files_scope("ALL")
+  |> should.be_ok()
+  |> should.equal(All)
+
+  parse_files_scope("unstaged")
+  |> should.be_ok()
+  |> should.equal(Unstaged)
+
+  parse_files_scope("nope")
+  |> should.be_error()
 }

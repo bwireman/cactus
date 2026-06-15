@@ -1,21 +1,17 @@
+import cactus/cli
 import cactus/run
-import cactus/util.{type CactusErr, CLIErr}
+import cactus/util.{
+  type CactusErr, ActionFailedErr, CLIErr, as_fs_err, err_as_str, format_info,
+  format_success, get_package_version, join_text, parse_always_init,
+  print_warning, quote,
+}
 import cactus/write
 import filepath
 import gleam/io
-import gleam/list
 import gleam/result
-import gxyz/cli
 import platform
 import shellout
 import simplifile
-
-fn get_cmd() -> String {
-  shellout.arguments()
-  |> cli.strip_js_from_argv()
-  |> list.last()
-  |> result.unwrap("")
-}
 
 const help_header = "    _
    | |  _
@@ -27,8 +23,9 @@ const help_header = "    _
    |_|      \\___\\__,_|\\___|\\__|\\__,_|___/
 "
 
-const help_body = "
-version: 1.3.4
+fn help_body(version: String) -> String {
+  "
+version: " <> version <> "
 --------------------------------------------
 A tool for managing git lifecycle hooks with
 ✨ gleam! Pre commit, Pre push
@@ -40,26 +37,41 @@ Usage:
 2. Run `gleam run --target <erlang|javascript> -m cactus`
 3. Celebrate! 🎉
 "
+}
+
+fn windows_hooks() -> Bool {
+  platform.os() == platform.Win32
+}
 
 pub fn main() -> Result(Nil, CactusErr) {
-  use pwd <- result.map(util.as_fs_err(simplifile.current_directory(), "."))
-  let gleam_toml = filepath.join(pwd, "gleam.toml")
+  use pwd <- result.map(as_fs_err(simplifile.current_directory(), "."))
+  let cli_opts = cli.parse_args(shellout.arguments())
+  let gleam_toml = cli.resolve_config_path(cli_opts, pwd)
   let hooks_dir =
     pwd
     |> filepath.join(".git")
     |> filepath.join("hooks")
+  let run_opts = cli.to_run_options(cli_opts)
 
-  let cmd = get_cmd()
+  let cmd = cli_opts.command
   let res = case cmd {
-    "help" | "--help" | "-h" | "-help" -> {
-      util.format_success(help_header)
+    "help" -> {
+      format_success(help_header)
       |> io.print()
 
-      util.format_info(help_body)
+      let version =
+        get_package_version(gleam_toml)
+        |> result.unwrap("unknown")
+
+      format_info(help_body(version))
       |> io.print()
 
       Ok(Nil)
     }
+
+    "clean" ->
+      write.clean(hooks_dir)
+      |> result.replace(Nil)
 
     "windows-init" ->
       write.init(hooks_dir, gleam_toml, True)
@@ -70,17 +82,17 @@ pub fn main() -> Result(Nil, CactusErr) {
       |> result.replace(Nil)
 
     "" | "init" ->
-      write.init(hooks_dir, gleam_toml, platform.os() == platform.Win32)
+      write.init(hooks_dir, gleam_toml, windows_hooks())
       |> result.replace(Nil)
 
     arg -> {
-      let _ = case util.parse_always_init(gleam_toml) {
-        True -> write.init(hooks_dir, gleam_toml, False)
+      let _ = case parse_always_init(gleam_toml) {
+        True -> write.init(hooks_dir, gleam_toml, windows_hooks())
         _ -> Ok([])
       }
 
       case write.is_valid_hook_name(arg) {
-        True -> run.run(gleam_toml, arg)
+        True -> run.run(gleam_toml, arg, run_opts)
         False -> Error(CLIErr(arg))
       }
       |> result.replace(Nil)
@@ -89,16 +101,18 @@ pub fn main() -> Result(Nil, CactusErr) {
 
   case res {
     Ok(_) -> Nil
-
     Error(CLIErr(err)) -> {
-      util.print_warning(util.err_as_str(CLIErr(err)))
+      print_warning(err_as_str(CLIErr(err)))
       shellout.exit(1)
     }
-
     Error(reason) -> {
-      [util.quote(cmd), "hook failed. Reason:", util.err_as_str(reason)]
-      |> util.join_text()
-      |> util.print_warning()
+      let message = case reason {
+        ActionFailedErr(_, _, _, _) -> err_as_str(reason)
+        _ ->
+          [quote(cmd), "hook failed. Reason:", err_as_str(reason)]
+          |> join_text()
+      }
+      print_warning(message)
       shellout.exit(1)
     }
   }
