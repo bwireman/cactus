@@ -40,6 +40,8 @@ jobs:
 
   windows-erlang:
     runs-on: windows-latest
+    env:
+      ImageOS: win25
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1
@@ -56,6 +58,8 @@ jobs:
 
   windows-node:
     runs-on: windows-latest
+    env:
+      ImageOS: win25
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1

@@ -164,10 +164,6 @@ pub fn merge_stash_pop_result(
   }
 }
 
-fn restore_stash(action_res: Result(List(String), CactusErr)) {
-  merge_stash_pop_result(git.pop_stash(), action_res)
-}
-
 fn run_with_stash(
   path: String,
   action: String,
@@ -176,7 +172,7 @@ fn run_with_stash(
   let action_res = run_actions(path, action)
 
   case stashed {
-    True -> restore_stash(action_res)
+    True -> merge_stash_pop_result(git.pop_stash(), action_res)
     False -> action_res
   }
 }

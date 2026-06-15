@@ -95,10 +95,14 @@ pub fn quote(str: String) -> String {
   "'" <> str <> "'"
 }
 
+pub fn normalize_newlines(text: String) -> String {
+  string.replace(text, "\r\n", "\n")
+}
+
 pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
   use body <- result.try(as_fs_err(simplifile.read(path), path))
   body
-  |> string.replace("\r\n", "\n")
+  |> normalize_newlines
   |> tom.parse()
   |> as_err(InvalidTomlErr)
 }
