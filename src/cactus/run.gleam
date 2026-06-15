@@ -142,26 +142,48 @@ pub fn get_actions(
   as_invalid_field_err(tom.get_array(action_body, [actions]))
 }
 
+fn run_actions(
+  path: String,
+  action: String,
+) -> Result(List(String), CactusErr) {
+  use actions <- try(get_actions(path, action))
+  actions
+  |> list.map(parse_action)
+  |> list.map(result.try(_, do_run))
+  |> result.all()
+}
+
+pub fn merge_stash_pop_result(
+  pop_res: Result(String, CactusErr),
+  action_res: Result(List(String), CactusErr),
+) -> Result(List(String), CactusErr) {
+  case pop_res, action_res {
+    Ok(_), _ -> action_res
+    Error(pop_err), Ok(_) -> Error(pop_err)
+    Error(_), Error(_) -> action_res
+  }
+}
+
+fn restore_stash(action_res: Result(List(String), CactusErr)) {
+  merge_stash_pop_result(git.pop_stash(), action_res)
+}
+
+fn run_with_stash(
+  path: String,
+  action: String,
+) -> Result(List(String), CactusErr) {
+  use stashed <- try(git.stash_unstaged())
+  let action_res = run_actions(path, action)
+
+  case stashed {
+    True -> restore_stash(action_res)
+    False -> action_res
+  }
+}
+
 pub fn run(path: String, action: String) -> Result(List(String), CactusErr) {
-  let stash_res = case action {
-    "pre-commit" -> git.stash_unstaged() |> result.replace(True)
-
-    _ -> Ok(False)
-  }
-
-  let action_res = {
-    use actions <- try(get_actions(path, action))
-    actions
-    |> list.map(parse_action)
-    |> list.map(result.try(_, do_run))
-    |> result.all()
-  }
-
-  case action, stash_res {
-    "pre-commit", Ok(True) ->
-      git.pop_stash()
-      |> result.try(fn(_) { action_res })
-
-    _, _ -> action_res
+  case action {
+    "pre-commit" -> run_with_stash(path, action)
+    _ -> run_actions(path, action)
   }
 }
