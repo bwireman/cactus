@@ -7,16 +7,20 @@ import gleam/dict
 import gleam/list
 import gleam/result.{try}
 import gleam/set
+import gleam/string
 @target(javascript)
 import platform
 import simplifile
 import tom
 
 const valid_hooks = [
-  "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-update",
-  "pre-applypatch", "pre-commit", "pre-merge-commit", "prepare-commit-msg",
+  "applypatch-msg", "commit-msg", "fsmonitor-watchman", "post-checkout",
+  "post-commit", "post-merge", "post-rewrite", "post-update", "pre-applypatch",
+  "pre-auto-gc", "pre-commit", "pre-merge-commit", "prepare-commit-msg",
   "pre-push", "pre-rebase", "pre-receive", "push-to-checkout", "update", "test",
 ]
+
+const cactus_marker = " -m cactus -- "
 
 fn gleam_name(windows: Bool) -> String {
   case windows {
@@ -39,18 +43,23 @@ pub fn get_hook_template(windows: Bool) -> String {
   <> gleam_name(windows)
   <> " run --target javascript --runtime "
   <> runtime
-  <> " -m cactus -- "
+  <> cactus_marker
 }
 
 @target(erlang)
 pub fn get_hook_template(windows: Bool) -> String {
   "#!/bin/sh \n\n"
   <> gleam_name(windows)
-  <> " run --target erlang -m cactus -- "
+  <> " run --target erlang"
+  <> cactus_marker
 }
 
 pub fn is_valid_hook_name(name: String) -> Bool {
   list.contains(valid_hooks, name)
+}
+
+pub fn is_cactus_hook(content: String) -> Bool {
+  string.contains(content, cactus_marker)
 }
 
 pub fn create_script(
@@ -100,4 +109,29 @@ pub fn init(
     |> result.all()
   }
   |> result.flatten()
+}
+
+pub fn clean(hooks_dir: String) -> Result(List(String), CactusErr) {
+  case simplifile.read_directory(hooks_dir) {
+    Ok(entries) ->
+      entries
+      |> list.filter(fn(name) { !list.contains([".", ".."], name) })
+      |> list.map(clean_hook(hooks_dir, _))
+      |> result.all()
+      |> result.map(fn(names) { list.filter(names, fn(name) { name != "" }) })
+    Error(_) -> Ok([])
+  }
+}
+
+fn clean_hook(hooks_dir: String, name: String) -> Result(String, CactusErr) {
+  let path = filepath.join(hooks_dir, name)
+  use content <- try(as_fs_err(simplifile.read(path), path))
+  case is_cactus_hook(content) {
+    True -> {
+      print_progress("Removing hook: " <> quote(name))
+      use _ <- try(as_fs_err(simplifile.delete(path), path))
+      Ok(name)
+    }
+    False -> Ok("")
+  }
 }

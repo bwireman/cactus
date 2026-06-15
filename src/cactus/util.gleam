@@ -1,4 +1,5 @@
 import gleam/dict.{type Dict}
+import gleam/int
 import gleam/io
 import gleam/result.{replace_error}
 import gleam/string
@@ -13,7 +14,7 @@ pub const cactus = "cactus"
 pub type CactusErr {
   InvalidFieldErr(field: String, err: Either(GetError, String))
   InvalidTomlErr
-  ActionFailedErr(output: String)
+  ActionFailedErr(index: Int, total: Int, command: String, output: String)
   FSErr(path: String, err: FileError)
   CLIErr(arg: String)
   GitError(command: String, err: String)
@@ -73,7 +74,15 @@ pub fn err_as_str(err: CactusErr) -> String {
 
     InvalidTomlErr -> "Invalid Toml Error"
 
-    ActionFailedErr(output) -> "Action Failed Error:\n" <> output
+    ActionFailedErr(index, total, command, output) ->
+      join_text([
+        "Action",
+        int.to_string(index) <> "/" <> int.to_string(total),
+        "failed:",
+        quote(command),
+      ])
+      <> "\n"
+      <> output
 
     FSErr(path, err) ->
       join_text(["FS Error at", path, "with", describe_error(err)])
@@ -117,6 +126,11 @@ pub fn parse_always_init(path: String) {
   |> result.unwrap(False)
 }
 
+pub fn get_package_version(path: String) -> Result(String, CactusErr) {
+  use manifest <- result.try(parse_gleam_toml(path))
+  tom.get_string(manifest, ["version"]) |> as_invalid_field_err
+}
+
 pub fn join_text(text: List(String)) -> String {
   string.join(text, " ")
 }
@@ -147,4 +161,11 @@ pub fn format_info(msg: String) {
 pub fn print_info(msg: String) {
   format_info(msg <> "\n")
   |> io.println()
+}
+
+pub fn print_verbose(enabled: Bool, msg: String) {
+  case enabled {
+    True -> print_info(msg)
+    False -> Nil
+  }
 }

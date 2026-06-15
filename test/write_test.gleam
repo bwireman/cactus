@@ -27,6 +27,19 @@ pub fn create_script_test() {
   assert actual == write.get_hook_template(False) <> "test"
 }
 
+pub fn clean_test() {
+  let assert Ok(_) = simplifile.delete_all([hook_dir])
+  let assert Ok(_) = write.create_script(hook_dir, "test", False)
+
+  write.clean(hook_dir)
+  |> should.be_ok()
+
+  case simplifile.read(filepath.join(hook_dir, "test")) {
+    Ok(_) -> should.fail()
+    Error(_) -> Nil
+  }
+}
+
 @target(javascript)
 pub fn get_hook_template_test() {
   let runtime = case platform.runtime() {
