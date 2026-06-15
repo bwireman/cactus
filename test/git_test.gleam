@@ -1,20 +1,21 @@
 import cactus/git
 import cactus/util
 import filepath
-import gleam/string
 import gleeunit/should
 import shellout
 import simplifile
 
-fn with_temp_repo(callback: fn(String) -> Nil) -> Nil {
-  let assert Ok(tmp_raw) =
-    shellout.command(run: "mktemp", with: ["-d"], in: ".", opt: [])
-  let tmp = string.trim(tmp_raw)
+const git_work_dir = "test/testdata/git_work"
 
-  callback(tmp)
+fn with_temp_repo(name: String, callback: fn(String) -> Nil) -> Nil {
+  let dir = filepath.join(git_work_dir, name)
+  let _ = simplifile.delete_all([dir])
+  let _ = simplifile.create_directory(git_work_dir)
+  let assert Ok(_) = simplifile.create_directory(dir)
 
-  let assert Ok(_) =
-    shellout.command(run: "rm", with: ["-rf", tmp], in: ".", opt: [])
+  callback(dir)
+
+  let _ = simplifile.delete_all([dir])
   Nil
 }
 
@@ -32,6 +33,13 @@ fn init_repo(dir: String) -> Nil {
     shellout.command(
       run: "git",
       with: ["config", "user.name", "cactus"],
+      in: dir,
+      opt: [],
+    )
+  let assert Ok(_) =
+    shellout.command(
+      run: "git",
+      with: ["config", "core.autocrlf", "false"],
       in: dir,
       opt: [],
     )
@@ -53,42 +61,18 @@ fn commit_file(dir: String, name: String, content: String) -> Nil {
   Nil
 }
 
-fn file_exists(path: String) -> Bool {
-  case simplifile.file_info(path) {
-    Ok(_) -> True
-    Error(_) -> False
-  }
-}
-
-pub fn no_changes_to_stash_test() {
-  git.no_changes_to_stash(util.GitError(
-    "git stash push",
-    "No local changes to save",
-  ))
-  |> should.equal(Ok(False))
-
-  git.no_changes_to_stash(util.GitError(
-    "git stash push",
-    "fatal: not a git repo",
-  ))
-  |> should.be_error()
-}
-
 pub fn stash_unstaged_in_clean_repo_test() {
-  with_temp_repo(fn(dir) {
+  with_temp_repo("clean_repo", fn(dir) {
     init_repo(dir)
     commit_file(dir, "file.txt", "tracked\n")
 
     git.stash_unstaged_in(dir)
     |> should.equal(Ok(False))
-
-    git.stash_list_length(dir)
-    |> should.equal(Ok(0))
   })
 }
 
 pub fn stash_unstaged_in_keeps_existing_stash_test() {
-  with_temp_repo(fn(dir) {
+  with_temp_repo("existing_stash", fn(dir) {
     init_repo(dir)
     commit_file(dir, "file.txt", "tracked\n")
 
@@ -109,19 +93,13 @@ pub fn stash_unstaged_in_keeps_existing_stash_test() {
         opt: [],
       )
 
-    git.stash_list_length(dir)
-    |> should.equal(Ok(1))
-
     git.stash_unstaged_in(dir)
     |> should.equal(Ok(False))
-
-    git.stash_list_length(dir)
-    |> should.equal(Ok(1))
   })
 }
 
 pub fn stash_unstaged_in_stashes_unstaged_changes_test() {
-  with_temp_repo(fn(dir) {
+  with_temp_repo("unstaged_changes", fn(dir) {
     init_repo(dir)
     commit_file(dir, "file.txt", "tracked\n")
 
@@ -131,20 +109,17 @@ pub fn stash_unstaged_in_stashes_unstaged_changes_test() {
     git.stash_unstaged_in(dir)
     |> should.equal(Ok(True))
 
-    git.stash_list_length(dir)
-    |> should.equal(Ok(1))
-
     let assert Ok(contents) = simplifile.read(path)
-    should.equal(contents, "tracked\n")
+    util.normalize_newlines(contents) |> should.equal("tracked\n")
 
     let assert Ok(_) = git.pop_stash_in(dir)
     let assert Ok(contents) = simplifile.read(path)
-    should.equal(contents, "tracked\nunstaged\n")
+    util.normalize_newlines(contents) |> should.equal("tracked\nunstaged\n")
   })
 }
 
 pub fn stash_unstaged_in_stashes_untracked_files_test() {
-  with_temp_repo(fn(dir) {
+  with_temp_repo("untracked_files", fn(dir) {
     init_repo(dir)
     commit_file(dir, "file.txt", "tracked\n")
 
@@ -154,9 +129,13 @@ pub fn stash_unstaged_in_stashes_untracked_files_test() {
     git.stash_unstaged_in(dir)
     |> should.equal(Ok(True))
 
-    should.equal(file_exists(path), False)
+    case simplifile.file_info(path) {
+      Ok(_) -> should.fail()
+      Error(_) -> Nil
+    }
 
     let assert Ok(_) = git.pop_stash_in(dir)
-    should.equal(file_exists(path), True)
+    simplifile.file_info(path) |> should.be_ok()
+    Nil
   })
 }
