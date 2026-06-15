@@ -10,7 +10,7 @@ on:
   pull_request:
 
 env:
-  otp: "28.3"
+  otp: "29.x"
   gleam: "1.17.0"
   rebar: "3"
 

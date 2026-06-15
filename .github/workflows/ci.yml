@@ -7,10 +7,10 @@ on:
   pull_request:
 
 env:
-  otp: "28.0"
+  otp: "29.x"
   gleam: "1.17.0"
   rebar: "3"
-  nodelts: "22.x"
+  nodelts: "24.x"
 
 jobs:
   build:
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [24.x]
     steps:
       - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1
