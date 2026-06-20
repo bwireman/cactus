@@ -5,8 +5,8 @@ import cactus/modified.{
 }
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
-  drop_empty, join_text, parse_gleam_toml, print_info, print_progress,
-  print_verbose, quote,
+  drop_empty, is_truthy_ci, join_text, parse_gleam_toml, print_info,
+  print_progress, print_verbose, quote,
 }
 import envoy
 import gleam/dict.{type Dict}
@@ -250,11 +250,7 @@ pub fn get_actions(
 
 fn should_skip(skip_if: Option(String), skip_env: Option(String)) -> Bool {
   case skip_if {
-    Some("ci") ->
-      case envoy.get("CI") {
-        Ok(value) -> value != ""
-        Error(_) -> False
-      }
+    Some("ci") -> is_truthy_ci()
     _ -> False
   }
   || case skip_env {
@@ -452,17 +448,6 @@ fn run_actions(
   run_hook_actions_with_fail_mode(config, opts)
 }
 
-pub fn merge_stash_pop_result(
-  pop_res: Result(String, CactusErr),
-  action_res: Result(List(String), CactusErr),
-) -> Result(List(String), CactusErr) {
-  case pop_res, action_res {
-    Ok(_), _ -> action_res
-    Error(pop_err), Ok(_) -> Error(pop_err)
-    Error(_), Error(_) -> action_res
-  }
-}
-
 fn run_with_stash(
   path: String,
   hook: String,
@@ -476,7 +461,10 @@ fn run_with_stash(
   case stashed {
     True -> {
       print_verbose(opts.verbose, "Restoring stashed changes")
-      merge_stash_pop_result(git.pop_stash(), action_res)
+      case git.pop_stash_required(), action_res {
+        Ok(_), _ -> action_res
+        Error(pop_err), _ -> Error(pop_err)
+      }
     }
     False -> action_res
   }

@@ -149,8 +149,7 @@ pub fn modified_files_match(
   let modified_files = drop_empty(modified_files)
   let watched = drop_empty(watched)
 
-  list.is_empty(modified_files)
-  || list.is_empty(watched)
+  list.is_empty(watched)
   || list.any(watched, fn(pattern) {
     list.any(modified_files, fn(file) { file_matches_pattern(file, pattern) })
   })

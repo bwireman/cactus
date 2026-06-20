@@ -18,8 +18,6 @@ pub fn parse_gleam_toml_test() {
 pub fn parse_always_init_test() {
   assert !util.parse_always_init("test/testdata/gleam/basic.toml")
 
-  assert !util.parse_always_init("test/testdata/gleam/basic.toml")
-
   assert !util.parse_always_init("test/testdata/gleam/too_many.toml")
 
   assert !util.parse_always_init("test/testdata/gleam/foo.toml")

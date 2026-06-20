@@ -87,13 +87,13 @@ actions = [
     # files: paths/extensions/globs that trigger the action (default: [] = always run)
     # files_scope: "staged" | "all" | "unstaged" — overrides hook default
     # cwd: working directory for the action (default: project root)
-    # skip_if: "ci" — skip this action when CI env is set
+    # skip_if: "ci" — skip this action when CI=true or CI=1
     # skip_env: "SKIP_HOOKS=1" — skip when env var is set to that value
     # env: { KEY = "value" } — extra environment variables
 
     { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam"], files_scope = "staged" },
     { command = "./scripts/test.sh", kind = "binary" },
-    { command = "go_over", args = ["--outdated"] },
+    { command = "go_over", kind = "module" },
 ]
 ```
 
@@ -163,3 +163,4 @@ hook scripts.
 | Stash pop conflict after pre-commit | Run `git stash list`, resolve conflicts, `git stash drop` the `cactus-pre-commit` entry if needed |
 | Not in a git repo                   | Initialize git first: `git init`                                                                  |
 | `--config` path not found           | Pass absolute or relative path to a valid `gleam.toml`                                            |
+| Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit` |

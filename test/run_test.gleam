@@ -1,5 +1,4 @@
 import cactus/run
-import cactus/util.{ActionFailedErr, GitError}
 import gleam/list
 import gleeunit/should
 
@@ -69,21 +68,4 @@ pub fn parse_action_test() {
     run.get_actions("test/testdata/gleam/too_many.toml", "pre-merge-commit")
 
   let assert Error(_) = run.get_actions("test/testdata/gleam/fake.toml", "")
-}
-
-pub fn merge_stash_pop_result_test() {
-  let hook_err = ActionFailedErr(1, 1, "false", "hook failed")
-  let pop_err = GitError("git stash pop", "conflict")
-
-  run.merge_stash_pop_result(Ok(""), Ok([]))
-  |> should.equal(Ok([]))
-
-  run.merge_stash_pop_result(Ok(""), Error(hook_err))
-  |> should.equal(Error(hook_err))
-
-  run.merge_stash_pop_result(Error(pop_err), Ok([]))
-  |> should.equal(Error(pop_err))
-
-  run.merge_stash_pop_result(Error(pop_err), Error(hook_err))
-  |> should.equal(Error(hook_err))
 }

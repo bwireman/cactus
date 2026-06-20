@@ -1,0 +1,5 @@
+[cactus.test]
+skip_if = "ci"
+actions = [
+  { command = "touch", kind = "binary", args = [".skip-ci-ran"] },
+]
