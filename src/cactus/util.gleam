@@ -1,8 +1,7 @@
-import envoy
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/io
-import gleam/result.{replace_error}
+import gleam/result
 import gleam/string
 import gleither.{type Either, Left, Right}
 import gxyz/list.{reject}
@@ -23,7 +22,7 @@ pub type CactusErr {
 }
 
 pub fn as_err(res: Result(a, b), err: CactusErr) -> Result(a, CactusErr) {
-  replace_error(res, err)
+  result.replace_error(res, err)
 }
 
 pub fn as_invalid_field_err(res: Result(a, GetError)) -> Result(a, CactusErr) {
@@ -101,17 +100,6 @@ pub fn drop_empty(l: List(String)) -> List(String) {
   reject(l, string.is_empty)
 }
 
-pub fn is_truthy_ci() -> Bool {
-  case envoy.get("CI") {
-    Ok(value) ->
-      case string.lowercase(string.trim(value)) {
-        "true" | "1" -> True
-        _ -> False
-      }
-    Error(_) -> False
-  }
-}
-
 pub fn quote(str: String) -> String {
   "'" <> str <> "'"
 }
@@ -128,14 +116,13 @@ pub fn parse_gleam_toml(path: String) -> Result(Dict(String, Toml), CactusErr) {
   |> as_err(InvalidTomlErr)
 }
 
-pub fn parse_always_init(path: String) {
-  parse_gleam_toml(path)
-  |> result.try(fn(t) {
-    t
-    |> tom.get_bool(["cactus", "always_init"])
-    |> as_invalid_field_err
-  })
-  |> result.unwrap(False)
+pub fn parse_always_init(path: String) -> Result(Bool, CactusErr) {
+  use t <- result.try(parse_gleam_toml(path))
+  case tom.get_bool(t, ["cactus", "always_init"]) {
+    Ok(value) -> Ok(value)
+    Error(NotFound(_)) -> Ok(False)
+    Error(err) -> Error(InvalidFieldErr("always_init", Left(err)))
+  }
 }
 
 pub fn get_package_version(path: String) -> Result(String, CactusErr) {

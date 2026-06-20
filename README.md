@@ -77,8 +77,8 @@ always_init = false
 files_scope = "staged"
 # stop on first failure (default) or run all actions and fail at end
 on_failure = "stop"
-# Skip all actions in this hook when CI=true
-skip_if = "ci"
+# Skip the entire hook when CI=true (see "skip_env" below)
+skip_env = "CI=true"
 
 actions = [
     # command: required — binary path, gleam module, or gleam subcommand name
@@ -87,8 +87,7 @@ actions = [
     # files: paths/extensions/globs that trigger the action (default: [] = always run)
     # files_scope: "staged" | "all" | "unstaged" — overrides hook default
     # cwd: working directory for the action (default: project root)
-    # skip_if: "ci" — skip this action when CI=true or CI=1
-    # skip_env: "SKIP_HOOKS=1" — skip when env var is set to that value
+    # skip_env: skip when NAME=value — see "skip_env" below
     # env: { KEY = "value" } — extra environment variables
 
     { command = "format", kind = "sub_command", args = ["--check"], files = [".gleam"], files_scope = "staged" },
@@ -121,16 +120,67 @@ An empty `files` list means the action always runs.
 For pre-commit hooks, `files_scope = "staged"` is recommended so linters only
 run when relevant staged files change.
 
+#### `skip_env`
+
+Skip a hook or individual action when an environment variable equals a specific
+value. Useful when CI runs the same checks separately and you do not want hooks
+to duplicate work (or fail) in the pipeline.
+
+**Syntax** — `NAME=value` (only the first `=` separates name from value, so the
+value may contain `=`):
+
+```toml
+[cactus.pre-push]
+skip_env = "CI=true"   # skip every action when CI=true
+actions = [
+  { command = "./scripts/test.sh", kind = "binary" },
+  {
+    command = "format",
+    kind = "sub_command",
+    args = ["--check"],
+    skip_env = "SKIP_HOOKS=1",
+  },
+]
+```
+
+**Matching** — the env var must match **exactly** (case-sensitive). Unset vars
+never match.
+
+| Example `skip_env`   | Skips when…                    |
+| -------------------- | ------------------------------ |
+| `CI=true`            | `CI` is set to `true`          |
+| `SKIP_HOOKS=1`       | `SKIP_HOOKS` is set to `1`     |
+| `CI=1`               | `CI` is set to `1` (not `true`)|
+
+Most CI providers set `CI=true`. Use that unless your pipeline uses a different
+value.
+
+**Hook vs action** — a hook-level `skip_env` applies to every action in that
+hook. An action without its own `skip_env` inherits the hook default. Set
+`skip_env` on a single action to skip only that step.
+
+Use `--verbose` to see when hooks or actions are skipped.
+
+#### `cwd`
+
+When `cwd` is set on an action, the command runs in that directory. File
+filtering (`files` / `files_scope`) only considers paths **under** that
+directory (relative to the repository root). Use this for monorepo packages:
+
+```toml
+{ command = "gleam test", kind = "binary", cwd = "packages/foo", files = [".gleam"], files_scope = "staged" }
+```
+
 #### Pre-commit stash behavior
 
-The `pre-commit` hook stashes unstaged and untracked changes before running
-actions, then restores them afterward. This keeps formatters/linters from seeing
-dirty working-tree state.
+The `pre-commit` and `pre-merge-commit` hooks stash unstaged and untracked
+changes before running actions, then restore them afterward. This keeps
+formatters/linters from seeing dirty working-tree state.
 
 - Stashes are tagged with the message `cactus-pre-commit`
 - Only cactus-tagged stashes are popped automatically
-- If you already have unrelated stashes, cactus will not stash (actions may see
-  unstaged changes) — commit or stash manually first
+- If you already have unrelated stashes, cactus will not stash and prints a
+  warning when the working tree is still dirty — commit or stash manually first
 
 #### Supported hooks
 
@@ -159,8 +209,9 @@ hook scripts.
 | ----------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Hooks not running                   | Run `gleam run -m cactus` from project root; ensure `.git/hooks/<name>` exists and is executable  |
 | Wrong gleam/runtime in hook         | Re-run init with correct `--target` and `--runtime`; choices are embedded in hook scripts         |
-| Action skipped unexpectedly         | Check `files`, `files_scope`, and `skip_if` / `skip_env`; use `--verbose`                         |
+| Action skipped unexpectedly         | Check `files`, `files_scope`, and `skip_env`; use `--verbose`                              |
 | Stash pop conflict after pre-commit | Run `git stash list`, resolve conflicts, `git stash drop` the `cactus-pre-commit` entry if needed |
 | Not in a git repo                   | Initialize git first: `git init`                                                                  |
 | `--config` path not found           | Pass absolute or relative path to a valid `gleam.toml`                                            |
+| Stash skipped warning during hook   | An existing git stash blocked cactus from stashing; commit or stash manually so actions see a clean tree |
 | Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit`                 |

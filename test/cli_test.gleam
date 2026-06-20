@@ -62,3 +62,34 @@ pub fn resolve_config_path_test() {
   )
   |> should.equal("/tmp/project/cfg/gleam.toml")
 }
+
+pub fn help_aliases_test() {
+  cli.parse_args(["--help"])
+  |> should.equal(cli.CliOptions(
+    verbose: False,
+    dry_run: False,
+    config_path: option.None,
+    command: "help",
+  ))
+
+  cli.parse_args(["-h", "init"])
+  |> should.equal(cli.CliOptions(
+    verbose: False,
+    dry_run: False,
+    config_path: option.None,
+    command: "help",
+  ))
+}
+
+pub fn resolve_config_absolute_path_test() {
+  cli.resolve_config_path(
+    cli.CliOptions(
+      verbose: False,
+      dry_run: False,
+      config_path: option.Some("/etc/gleam.toml"),
+      command: "",
+    ),
+    "/tmp/project",
+  )
+  |> should.equal("/etc/gleam.toml")
+}

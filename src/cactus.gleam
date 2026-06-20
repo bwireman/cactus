@@ -86,10 +86,13 @@ pub fn main() -> Result(Nil, CactusErr) {
       |> result.replace(Nil)
 
     arg -> {
-      let _ = case parse_always_init(gleam_toml) {
-        True -> write.init(hooks_dir, gleam_toml, windows_hooks())
-        _ -> Ok([])
-      }
+      use _ <- result.try(case parse_always_init(gleam_toml) {
+        Ok(True) ->
+          write.init(hooks_dir, gleam_toml, windows_hooks())
+          |> result.replace(Nil)
+        Ok(False) -> Ok(Nil)
+        Error(e) -> Error(e)
+      })
 
       case write.is_valid_hook_name(arg) {
         True -> run.run(gleam_toml, arg, run_opts)

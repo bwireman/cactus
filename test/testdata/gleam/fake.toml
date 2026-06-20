@@ -1,1 +1,2 @@
+# Intentionally invalid TOML for parse error tests
 not valid toml [[[

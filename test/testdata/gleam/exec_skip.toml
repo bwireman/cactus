@@ -1,5 +1,5 @@
 [cactus.test]
-skip_if = "ci"
+skip_env = "CI=true"
 actions = [
   { command = "touch", kind = "binary", args = [".skip-ci-ran"] },
 ]

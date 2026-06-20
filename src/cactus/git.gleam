@@ -1,4 +1,5 @@
 import cactus/util
+import gleam/list
 import gleam/result
 import gleam/string
 import shellout
@@ -23,6 +24,7 @@ pub fn list_files_in(
 ) -> Result(List(String), util.CactusErr) {
   shellout.command(run: "git", with: args, in: dir, opt: [])
   |> result.map(string.split(_, "\n"))
+  |> result.map(list.map(_, string.trim))
   |> result.map(util.drop_empty)
   |> util.as_git_error(full_command(args))
 }
@@ -72,6 +74,24 @@ pub fn stash_unstaged_in(dir: String) -> Result(Bool, util.CactusErr) {
 
 pub fn stash_unstaged() -> Result(Bool, util.CactusErr) {
   stash_unstaged_in(".")
+}
+
+pub fn worktree_has_unstaged_changes_in(
+  dir: String,
+) -> Result(Bool, util.CactusErr) {
+  case list_files_in(dir, ["diff", "--name-only"]) {
+    Ok(tracked) ->
+      case list_files_in(dir, ["ls-files", "--others", "--exclude-standard"]) {
+        Ok(untracked) ->
+          Ok(!list.is_empty(tracked) || !list.is_empty(untracked))
+        Error(err) -> Error(err)
+      }
+    Error(err) -> Error(err)
+  }
+}
+
+pub fn worktree_has_unstaged_changes() -> Result(Bool, util.CactusErr) {
+  worktree_has_unstaged_changes_in(".")
 }
 
 pub fn pop_stash_required_in(dir: String) -> Result(String, util.CactusErr) {

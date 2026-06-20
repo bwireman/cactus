@@ -1,0 +1,9 @@
+[cactus.test]
+actions = [
+  {
+    command = "sh",
+    kind = "binary",
+    args = ["-c", "test -n \"$CACTUS_TEST_VAR\""],
+    env = { CACTUS_TEST_VAR = "set" },
+  },
+]
