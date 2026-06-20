@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.4.1
+
+### Added
+
+- Warning when pre-commit/pre-merge-commit cannot stash because a git stash
+  already exists and the working tree is still dirty
+
+### Changed
+
+- `pre-merge-commit` uses the same stash/pop behavior as `pre-commit`
+- File filters respect `cwd`: only paths under the action's `cwd` are considered
+- **`skip_if` removed** — use `skip_env` instead (e.g. `skip_env = "CI=true"`)
+- `skip_env` supported at hook and action level; values may contain `=` (parsed
+  via first `=`)
+
+### Removed
+
+- `skip_if` — replaced by `skip_env` for all skip conditions
+
+### Fixed
+
+- `always_init` re-init errors are no longer swallowed during hook runs
+- Invalid `always_init` type surfaces a config error instead of defaulting to
+  `false`
+- Carriage returns stripped from git file list output (Windows compatibility)
+- Hook script creation tolerates existing `.git/hooks` directory or hook file
+
 ## 1.4.0
 
 ### Added

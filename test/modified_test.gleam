@@ -1,6 +1,6 @@
 import cactus/modified.{
-  All, Staged, Unstaged, file_matches_pattern, modified_files_match,
-  parse_files_scope,
+  All, Staged, Unstaged, file_matches_pattern, filter_files_under_cwd,
+  modified_files_match, parse_files_scope,
 }
 import gleeunit/should
 
@@ -80,6 +80,25 @@ pub fn glob_match_src_negative_test() {
 pub fn glob_match_extension_test() {
   file_matches_pattern("src/foo.gleam", "*.gleam")
   |> should.be_true()
+}
+
+pub fn glob_unsupported_pattern_test() {
+  file_matches_pattern("foo.gleam", "*.*.gleam")
+  |> should.be_false()
+}
+
+pub fn filter_files_under_cwd_test() {
+  filter_files_under_cwd(
+    ["pkg/foo.gleam", "other/bar.gleam", "pkg/readme.md"],
+    "pkg",
+  )
+  |> should.equal(["pkg/foo.gleam", "pkg/readme.md"])
+
+  filter_files_under_cwd(["src/foo.gleam"], ".")
+  |> should.equal(["src/foo.gleam"])
+
+  filter_files_under_cwd(["src/foo.gleam"], "./")
+  |> should.equal(["src/foo.gleam"])
 }
 
 pub fn parse_files_scope_test() {

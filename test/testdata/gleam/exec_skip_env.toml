@@ -1,0 +1,9 @@
+[cactus.test]
+actions = [
+  {
+    command = "touch",
+    kind = "binary",
+    args = [".skip-env-ran"],
+    skip_env = "SKIP_HOOKS=1",
+  },
+]

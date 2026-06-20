@@ -1,0 +1,10 @@
+[cactus.pre-commit]
+files_scope = "staged"
+actions = [
+  {
+    command = "touch",
+    kind = "binary",
+    args = [".filter-ran"],
+    files = [".marker"],
+  },
+]

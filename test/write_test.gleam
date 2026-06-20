@@ -40,6 +40,27 @@ pub fn clean_test() {
   }
 }
 
+pub fn clean_preserves_user_hooks_test() {
+  let user_hook = filepath.join(hook_dir, "user-hook")
+  let assert Ok(_) = simplifile.delete_all([hook_dir])
+  let assert Ok(_) = simplifile.create_directory(hook_dir)
+  let assert Ok(_) =
+    simplifile.write(user_hook, "#!/bin/sh\n\necho user hook\n")
+  let assert Ok(_) = write.create_script(hook_dir, "test", False)
+
+  write.clean(hook_dir)
+  |> should.be_ok()
+
+  simplifile.read(user_hook)
+  |> should.be_ok()
+  |> should.equal("#!/bin/sh\n\necho user hook\n")
+
+  case simplifile.read(filepath.join(hook_dir, "test")) {
+    Ok(_) -> should.fail()
+    Error(_) -> Nil
+  }
+}
+
 @target(javascript)
 pub fn get_hook_template_test() {
   let runtime = case platform.runtime() {

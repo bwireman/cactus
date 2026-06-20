@@ -1,0 +1,5 @@
+[cactus.test]
+skip_env = "not-valid"
+actions = [
+  { command = "touch", kind = "binary", args = [".invalid-skip-ran"] },
+]

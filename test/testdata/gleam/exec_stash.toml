@@ -1,0 +1,9 @@
+[cactus.pre-commit]
+actions = [
+  { command = "touch", kind = "binary", args = [".stash-ran"] },
+]
+
+[cactus.pre-merge-commit]
+actions = [
+  { command = "touch", kind = "binary", args = [".pre-merge-ran"] },
+]

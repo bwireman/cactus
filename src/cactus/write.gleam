@@ -22,6 +22,22 @@ const valid_hooks = [
 
 const cactus_marker = " -m cactus -- "
 
+fn ensure_directory(path: String) -> Result(Nil, CactusErr) {
+  case simplifile.create_directory(path) {
+    Ok(_) -> Ok(Nil)
+    Error(simplifile.Eexist) -> Ok(Nil)
+    Error(err) -> as_fs_err(Error(err), path)
+  }
+}
+
+fn ensure_file(path: String) -> Result(Nil, CactusErr) {
+  case simplifile.create_file(path) {
+    Ok(_) -> Ok(Nil)
+    Error(simplifile.Eexist) -> Ok(Nil)
+    Error(err) -> as_fs_err(Error(err), path)
+  }
+}
+
 fn gleam_name(windows: Bool) -> String {
   case windows {
     True -> "gleam.exe"
@@ -76,8 +92,8 @@ pub fn create_script(
   let all =
     set.from_list([simplifile.Read, simplifile.Write, simplifile.Execute])
 
-  let _ = simplifile.create_directory(hooks_dir)
-  let _ = simplifile.create_file(path)
+  use _ <- try(ensure_directory(hooks_dir))
+  use _ <- try(ensure_file(path))
   use _ <- try(as_fs_err(
     simplifile.write(path, get_hook_template(windows) <> command),
     path,

@@ -1,27 +1,30 @@
 import cactus/git
 import cactus/modified.{
   type FilesScope, default_files_scope, files_scope_label,
-  get_files_for_scope_in, modified_files_match, parse_files_scope,
+  filter_files_under_cwd, get_files_for_scope_in, modified_files_match,
+  parse_files_scope,
 }
 import cactus/util.{
   type CactusErr, ActionFailedErr, InvalidFieldErr, as_invalid_field_err, cactus,
-  drop_empty, is_truthy_ci, join_text, parse_gleam_toml, print_info,
-  print_progress, print_verbose, quote,
+  drop_empty, join_text, parse_gleam_toml, print_info, print_progress,
+  print_verbose, print_warning, quote,
 }
 import envoy
 import gleam/dict.{type Dict}
 import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/result.{try}
+import gleam/result.{all, map, try, unwrap}
 import gleam/string
-import gleither.{Right}
+import gleither.{Left, Right}
 import shellout.{SetEnvironment, command}
-import tom.{type Toml}
+import tom.{type Toml, NotFound}
 
 const actions = "actions"
 
 const gleam = "gleam"
+
+const stash_hooks = ["pre-commit", "pre-merge-commit"]
 
 pub type RunOptions {
   RunOptions(verbose: Bool, dry_run: Bool)
@@ -47,7 +50,6 @@ pub type Action {
     files_scope: FilesScope,
     cwd: String,
     env: List(#(String, String)),
-    skip_if: Option(String),
     skip_env: Option(String),
   )
 }
@@ -56,7 +58,7 @@ pub type HookConfig {
   HookConfig(
     files_scope: FilesScope,
     on_failure: FailMode,
-    skip_if: Option(String),
+    skip_env: Option(String),
     actions: List(Action),
   )
 }
@@ -80,10 +82,39 @@ fn do_parse_kind(kind: String) -> Result(ActionKind, CactusErr) {
   }
 }
 
-fn parse_optional_string(t: Dict(String, Toml), key: String) -> Option(String) {
-  tom.get_string(t, [key])
-  |> result.map(Some)
-  |> result.unwrap(None)
+fn parse_skip_env(raw: String) -> Result(Option(String), CactusErr) {
+  case string.split_once(string.trim(raw), on: "=") {
+    Ok(#(name, value)) ->
+      case name, value {
+        "", _ ->
+          Error(InvalidFieldErr(
+            "skip_env",
+            Right("expected NAME=value, got: " <> quote(raw)),
+          ))
+        _, "" ->
+          Error(InvalidFieldErr(
+            "skip_env",
+            Right("expected NAME=value, got: " <> quote(raw)),
+          ))
+        _, _ -> Ok(Some(name <> "=" <> value))
+      }
+    Error(_) ->
+      Error(InvalidFieldErr(
+        "skip_env",
+        Right("expected NAME=value, got: " <> quote(raw)),
+      ))
+  }
+}
+
+fn parse_skip_env_field(
+  t: Dict(String, Toml),
+  key: String,
+) -> Result(Option(String), CactusErr) {
+  case tom.get_string(t, [key]) {
+    Ok(raw) -> parse_skip_env(raw)
+    Error(NotFound(_)) -> Ok(None)
+    Error(err) -> Error(InvalidFieldErr(key, Left(err)))
+  }
 }
 
 fn parse_files_scope_field(
@@ -110,7 +141,7 @@ fn parse_env_table(
             Error(InvalidFieldErr("env", Right("'env' values must be strings")))
         }
       })
-      |> result.all()
+      |> all()
     Ok(_) ->
       Error(InvalidFieldErr("env", Right("'env' must be an inline table")))
     Error(_) -> Ok([])
@@ -123,25 +154,26 @@ fn do_parse_action(
 ) -> Result(Action, CactusErr) {
   let kind =
     tom.get_string(t, ["kind"])
-    |> result.map(string.lowercase)
-    |> result.unwrap("module")
+    |> map(string.lowercase)
+    |> unwrap("module")
 
   use command <- try(as_invalid_field_err(tom.get_string(t, ["command"])))
   use args <- try(
     tom.get_array(t, ["args"])
-    |> result.unwrap([])
+    |> unwrap([])
     |> list.map(as_string)
-    |> result.all(),
+    |> all(),
   )
   use files <- try(
     tom.get_array(t, ["files"])
-    |> result.unwrap([])
+    |> unwrap([])
     |> list.map(as_string)
-    |> result.all(),
+    |> all(),
   )
   use files_scope <- try(parse_files_scope_field(t, hook_default))
   use action_kind <- try(do_parse_kind(kind))
   use env <- try(parse_env_table(t))
+  use skip_env <- try(parse_skip_env_field(t, "skip_env"))
 
   Ok(Action(
     command: command,
@@ -149,10 +181,9 @@ fn do_parse_action(
     args: args,
     files: files,
     files_scope: files_scope,
-    cwd: tom.get_string(t, ["cwd"]) |> result.unwrap("."),
+    cwd: tom.get_string(t, ["cwd"]) |> unwrap("."),
     env: env,
-    skip_if: parse_optional_string(t, "skip_if"),
-    skip_env: parse_optional_string(t, "skip_env"),
+    skip_env: skip_env,
   ))
 }
 
@@ -187,6 +218,7 @@ fn parse_hook_table(
     Ok(raw) -> parse_fail_mode(raw)
     Error(_) -> Ok(Stop)
   })
+  use skip_env <- try(parse_skip_env_field(action_body, "skip_env"))
 
   use raw_actions <- try(
     as_invalid_field_err(tom.get_array(action_body, [actions])),
@@ -204,13 +236,13 @@ fn parse_hook_table(
           ))
       }
     })
-    |> result.all(),
+    |> all(),
   )
 
   Ok(HookConfig(
     files_scope: hook_files_scope,
     on_failure: on_failure,
-    skip_if: parse_optional_string(action_body, "skip_if"),
+    skip_env: skip_env,
     actions: parsed_actions,
   ))
 }
@@ -248,20 +280,16 @@ pub fn get_actions(
   as_invalid_field_err(tom.get_array(action_body, [actions]))
 }
 
-fn should_skip(skip_if: Option(String), skip_env: Option(String)) -> Bool {
-  case skip_if {
-    Some("ci") -> is_truthy_ci()
-    _ -> False
-  }
-  || case skip_env {
+fn should_skip(skip_env: Option(String)) -> Bool {
+  case skip_env {
     Some(raw) ->
-      case string.split(raw, "=") {
-        [name, value] ->
+      case string.split_once(raw, on: "=") {
+        Ok(#(name, value)) ->
           case envoy.get(name) {
             Ok(found) -> found == value
             Error(_) -> False
           }
-        _ -> False
+        Error(_) -> False
       }
     None -> False
   }
@@ -284,17 +312,17 @@ fn do_run(
   action: Action,
   index: Int,
   total: Int,
-  hook_skip_if: Option(String),
+  hook_skip_env: Option(String),
   opts: RunOptions,
 ) -> Result(String, CactusErr) {
-  let skip_if = option.or(action.skip_if, hook_skip_if)
+  let skip_env = option.or(action.skip_env, hook_skip_env)
   let label = action_label(action)
 
-  case should_skip(skip_if, action.skip_env) {
+  case should_skip(skip_env) {
     True -> {
       print_verbose(
         opts.verbose,
-        "Skipping " <> quote(label) <> " (skip condition matched)",
+        "Skipping " <> quote(label) <> " (skip_env matched)",
       )
       Ok("")
     }
@@ -303,9 +331,11 @@ fn do_run(
         True -> Ok(True)
         False -> {
           use modified_files <- try(get_files_for_scope_in(
-            action.cwd,
+            ".",
             action.files_scope,
           ))
+          let modified_files =
+            filter_files_under_cwd(modified_files, action.cwd)
           print_verbose(
             opts.verbose,
             "Checking files ("
@@ -368,16 +398,16 @@ fn run_hook_actions_with_fail_mode(
   config: HookConfig,
   opts: RunOptions,
 ) -> Result(List(String), CactusErr) {
-  case should_skip(config.skip_if, None) {
+  case should_skip(config.skip_env) {
     True -> {
-      print_verbose(opts.verbose, "Skipping hook (skip_if matched)")
+      print_verbose(opts.verbose, "Skipping hook (skip_env matched)")
       Ok([])
     }
     False -> {
       let total = list.length(config.actions)
       run_hook_actions_with_fail_mode_loop(
         config.actions,
-        config.skip_if,
+        config.skip_env,
         config.on_failure,
         opts,
         total,
@@ -391,7 +421,7 @@ fn run_hook_actions_with_fail_mode(
 
 fn run_hook_actions_with_fail_mode_loop(
   remaining: List(Action),
-  hook_skip_if: Option(String),
+  hook_skip_env: Option(String),
   on_failure: FailMode,
   opts: RunOptions,
   total: Int,
@@ -407,11 +437,11 @@ fn run_hook_actions_with_fail_mode_loop(
       }
     [action, ..rest] -> {
       let next_index = index + 1
-      case do_run(action, next_index, total, hook_skip_if, opts) {
+      case do_run(action, next_index, total, hook_skip_env, opts) {
         Ok(output) ->
           run_hook_actions_with_fail_mode_loop(
             rest,
-            hook_skip_if,
+            hook_skip_env,
             on_failure,
             opts,
             total,
@@ -425,7 +455,7 @@ fn run_hook_actions_with_fail_mode_loop(
             Continue ->
               run_hook_actions_with_fail_mode_loop(
                 rest,
-                hook_skip_if,
+                hook_skip_env,
                 on_failure,
                 opts,
                 total,
@@ -453,9 +483,22 @@ fn run_with_stash(
   hook: String,
   opts: RunOptions,
 ) -> Result(List(String), CactusErr) {
-  print_verbose(opts.verbose, "Stashing unstaged changes for pre-commit")
+  print_verbose(opts.verbose, "Stashing unstaged changes for " <> hook)
 
   use stashed <- try(git.stash_unstaged())
+  case stashed {
+    False ->
+      case git.worktree_has_unstaged_changes() {
+        Ok(True) ->
+          print_warning(
+            "Skipped stashing unstaged changes: an existing git stash was found. "
+            <> "Commit or stash manually first so hook actions do not see dirty "
+            <> "working-tree state.",
+          )
+        _ -> Nil
+      }
+    _ -> Nil
+  }
   let action_res = run_actions(path, hook, opts)
 
   case stashed {
@@ -475,8 +518,8 @@ pub fn run(
   hook: String,
   opts: RunOptions,
 ) -> Result(List(String), CactusErr) {
-  case hook {
-    "pre-commit" -> run_with_stash(path, hook, opts)
-    _ -> run_actions(path, hook, opts)
+  case list.contains(stash_hooks, hook) {
+    True -> run_with_stash(path, hook, opts)
+    False -> run_actions(path, hook, opts)
   }
 }

@@ -80,6 +80,20 @@ fn normalize_path(path: String) -> String {
   path |> string.replace("\\", "/") |> string.trim
 }
 
+pub fn filter_files_under_cwd(
+  files: List(String),
+  cwd: String,
+) -> List(String) {
+  case normalize_path(cwd) {
+    "." | "" -> files
+    prefix ->
+      list.filter(files, fn(file) {
+        let file = normalize_path(file)
+        file == prefix || string.starts_with(file, prefix <> "/")
+      })
+  }
+}
+
 pub fn file_matches_pattern(file: String, pattern: String) -> Bool {
   let file = normalize_path(file)
   let pattern = normalize_path(pattern)
