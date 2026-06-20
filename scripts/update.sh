@@ -3,4 +3,5 @@ set -e
 cd "$(dirname "$0")/.."
 
 gleam update
-gleam run -m go_over -- --outdated
+gleam run -m go_over 
+gleam deps outdated

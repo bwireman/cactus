@@ -1,3 +1,4 @@
+import envoy
 import gleam/dict.{type Dict}
 import gleam/int
 import gleam/io
@@ -98,6 +99,17 @@ pub fn err_as_str(err: CactusErr) -> String {
 
 pub fn drop_empty(l: List(String)) -> List(String) {
   reject(l, string.is_empty)
+}
+
+pub fn is_truthy_ci() -> Bool {
+  case envoy.get("CI") {
+    Ok(value) ->
+      case string.lowercase(string.trim(value)) {
+        "true" | "1" -> True
+        _ -> False
+      }
+    Error(_) -> False
+  }
 }
 
 pub fn quote(str: String) -> String {

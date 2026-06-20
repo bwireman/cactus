@@ -37,9 +37,7 @@ actions = [
 
 [cactus.pre-push]
 actions = [
-    { command = "go_over", kind = "module", args = [
-        "--outdated",
-    ] },
+    { command = "go_over", kind = "module" },
 ]
 
 [cactus.test]

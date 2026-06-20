@@ -35,7 +35,7 @@ pub fn modified_files_match_test() {
   |> should.be_true()
 
   modified_files_match([], [".foo", ".bar"])
-  |> should.be_true()
+  |> should.be_false()
 
   modified_files_match([], [])
   |> should.be_true()

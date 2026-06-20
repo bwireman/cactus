@@ -1,0 +1,6 @@
+[cactus.test]
+on_failure = "continue"
+actions = [
+  { command = "false", kind = "binary", args = [] },
+  { command = "touch", kind = "binary", args = [".continue-ran"] },
+]

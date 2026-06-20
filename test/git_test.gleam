@@ -38,6 +38,8 @@ pub fn stash_unstaged_in_keeps_existing_stash_test() {
         opt: [],
       )
 
+    let assert Ok(_) = simplifile.write(path, "tracked\nunstaged\n")
+
     git.stash_unstaged_in(dir)
     |> should.equal(Ok(False))
   })
@@ -57,7 +59,7 @@ pub fn stash_unstaged_in_stashes_unstaged_changes_test() {
     let assert Ok(contents) = simplifile.read(path)
     util.normalize_newlines(contents) |> should.equal("tracked\n")
 
-    let assert Ok(_) = git.pop_stash_in(dir)
+    let assert Ok(_) = git.pop_stash_required_in(dir)
     let assert Ok(contents) = simplifile.read(path)
     util.normalize_newlines(contents) |> should.equal("tracked\nunstaged\n")
   })
@@ -79,7 +81,7 @@ pub fn stash_unstaged_in_stashes_untracked_files_test() {
       Error(_) -> Nil
     }
 
-    let assert Ok(_) = git.pop_stash_in(dir)
+    let assert Ok(_) = git.pop_stash_required_in(dir)
     simplifile.file_info(path) |> should.be_ok()
     Nil
   })

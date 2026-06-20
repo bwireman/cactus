@@ -1,17 +1,4 @@
-[cactus.test-hook]
-files_scope = "staged"
-actions = [
-  { command = "echo", kind = "binary", args = ["ran"], files = [".marker"] },
-  { command = "false", kind = "binary", args = [] },
-]
-
-[cactus.test-skip]
-skip_if = "ci"
-actions = [
-  { command = "echo", kind = "binary", args = ["skipped"] },
-]
-
-[cactus.test-dry]
+[cactus.test]
 actions = [
   { command = "touch", kind = "binary", args = [".dry-run-should-not-exist"] },
 ]
