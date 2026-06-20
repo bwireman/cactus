@@ -146,11 +146,11 @@ actions = [
 **Matching** — the env var must match **exactly** (case-sensitive). Unset vars
 never match.
 
-| Example `skip_env`   | Skips when…                    |
-| -------------------- | ------------------------------ |
-| `CI=true`            | `CI` is set to `true`          |
-| `SKIP_HOOKS=1`       | `SKIP_HOOKS` is set to `1`     |
-| `CI=1`               | `CI` is set to `1` (not `true`)|
+| Example `skip_env` | Skips when…                     |
+| ------------------ | ------------------------------- |
+| `CI=true`          | `CI` is set to `true`           |
+| `SKIP_HOOKS=1`     | `SKIP_HOOKS` is set to `1`      |
+| `CI=1`             | `CI` is set to `1` (not `true`) |
 
 Most CI providers set `CI=true`. Use that unless your pipeline uses a different
 value.
@@ -205,13 +205,13 @@ hook scripts.
 
 # Troubleshooting
 
-| Problem                             | Fix                                                                                               |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Hooks not running                   | Run `gleam run -m cactus` from project root; ensure `.git/hooks/<name>` exists and is executable  |
-| Wrong gleam/runtime in hook         | Re-run init with correct `--target` and `--runtime`; choices are embedded in hook scripts         |
-| Action skipped unexpectedly         | Check `files`, `files_scope`, and `skip_env`; use `--verbose`                              |
-| Stash pop conflict after pre-commit | Run `git stash list`, resolve conflicts, `git stash drop` the `cactus-pre-commit` entry if needed |
-| Not in a git repo                   | Initialize git first: `git init`                                                                  |
-| `--config` path not found           | Pass absolute or relative path to a valid `gleam.toml`                                            |
+| Problem                             | Fix                                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Hooks not running                   | Run `gleam run -m cactus` from project root; ensure `.git/hooks/<name>` exists and is executable         |
+| Wrong gleam/runtime in hook         | Re-run init with correct `--target` and `--runtime`; choices are embedded in hook scripts                |
+| Action skipped unexpectedly         | Check `files`, `files_scope`, and `skip_env`; use `--verbose`                                            |
+| Stash pop conflict after pre-commit | Run `git stash list`, resolve conflicts, `git stash drop` the `cactus-pre-commit` entry if needed        |
+| Not in a git repo                   | Initialize git first: `git init`                                                                         |
+| `--config` path not found           | Pass absolute or relative path to a valid `gleam.toml`                                                   |
 | Stash skipped warning during hook   | An existing git stash blocked cactus from stashing; commit or stash manually so actions see a clean tree |
-| Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit`                 |
+| Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit`                        |
