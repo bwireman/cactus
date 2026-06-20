@@ -163,4 +163,4 @@ hook scripts.
 | Stash pop conflict after pre-commit | Run `git stash list`, resolve conflicts, `git stash drop` the `cactus-pre-commit` entry if needed |
 | Not in a git repo                   | Initialize git first: `git init`                                                                  |
 | `--config` path not found           | Pass absolute or relative path to a valid `gleam.toml`                                            |
-| Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit` |
+| Stash not restored after pre-commit | Check `git stash list`; cactus errors if the top stash is not `cactus-pre-commit`                 |

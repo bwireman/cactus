@@ -18,7 +18,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Requires Gleam 1.x (`gleam_stdlib >= 1.0`)
-- Hook scripts embed compile target and JS runtime — re-run `init` after changing target/runtime
+- Hook scripts embed compile target and JS runtime — re-run `init` after
+  changing target/runtime
 - `always_init` on hook run respects Windows platform for hook templates
 - File-filtered actions skip when no files in scope match watched patterns
 - Pre-commit does not stash when unrelated stashes already exist on the stack
@@ -26,7 +27,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - `skip_if = "ci"` no longer treats `CI=false` as a CI environment
-- Pre-commit reports an error when cactus stash cannot be restored after a successful stash
+- Pre-commit reports an error when cactus stash cannot be restored after a
+  successful stash
 - Stash pop failures take precedence over hook action failures when both occur
 
 ### Glob limitations
