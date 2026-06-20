@@ -1,8 +1,5 @@
 # Cactus
 
-<p align="center">
-  <img src="images/cactus-logo.png" alt="Cactus logo" width="320">
-</p>
 
 [![Package Version](https://img.shields.io/hexpm/v/cactus)](https://hex.pm/packages/cactus)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/cactus/)
@@ -12,6 +9,8 @@
 
 A tool for managing git lifecycle hooks with ✨ gleam! Pre commit, Pre push and
 more!
+
+![logo](https://raw.githubusercontent.com/bwireman/cactus/main/images/cactus-logo.png)
 
 # Install
 
