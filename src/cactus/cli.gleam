@@ -3,6 +3,7 @@ import filepath
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
+import gleam/string
 import gxyz/cli
 
 pub type CliOptions {
@@ -54,10 +55,30 @@ fn parse_args_loop(
 pub fn resolve_config_path(opts: CliOptions, pwd: String) -> String {
   case opts.config_path {
     Some(path) ->
-      case filepath.is_absolute(path) {
+      case is_absolute_config_path(path) {
         True -> path
         False -> filepath.join(pwd, path)
       }
     None -> filepath.join(pwd, "gleam.toml")
+  }
+}
+
+fn is_absolute_config_path(path: String) -> Bool {
+  case filepath.is_absolute(path) {
+    True -> True
+    False -> windows_drive_absolute(path)
+  }
+}
+
+fn windows_drive_absolute(path: String) -> Bool {
+  case string.split_once(path, on: ":") {
+    Ok(#(drive, rest)) ->
+      string.length(drive) == 1
+      && string.contains(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        drive,
+      )
+      && { string.starts_with(rest, "/") || string.starts_with(rest, "\\") }
+    Error(_) -> False
   }
 }

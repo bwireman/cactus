@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
   `false`
 - Carriage returns stripped from git file list output (Windows compatibility)
 - Hook script creation tolerates existing `.git/hooks` directory or hook file
+- `--config` with Windows drive paths (`D:/...`) no longer joined against cwd
 
 ## 1.4.0
 
