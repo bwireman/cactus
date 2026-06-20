@@ -93,3 +93,18 @@ pub fn resolve_config_absolute_path_test() {
   )
   |> should.equal("/etc/gleam.toml")
 }
+
+pub fn resolve_config_windows_drive_path_test() {
+  cli.resolve_config_path(
+    cli.CliOptions(
+      verbose: False,
+      dry_run: False,
+      config_path: option.Some(
+        "D:/a/cactus/test/testdata/gleam/exec_stash.toml",
+      ),
+      command: "",
+    ),
+    "D:\\a\\cactus\\test\\testdata\\git_work\\pre_commit_stash",
+  )
+  |> should.equal("D:/a/cactus/test/testdata/gleam/exec_stash.toml")
+}
